@@ -12,6 +12,7 @@ function uplift() {
 
         // View state
         currentView: 'home', // home, create, join, lobby, writing, reading
+        onboardingStep: 'choice', // choice, name_entry
 
         // Session state
         sessionCode: '',
@@ -19,6 +20,7 @@ function uplift() {
         myId: null,
         userName: '',
         joinCode: '',
+        selectedAction: null, // 'create' or 'join'
 
         // Participants
         participants: [],
@@ -66,6 +68,8 @@ function uplift() {
             const codeFromURL = urlParams.get('code');
             if (codeFromURL) {
                 this.joinCode = codeFromURL.toUpperCase();
+                this.selectedAction = 'join';
+                this.onboardingStep = 'name_entry';
                 console.log('Pre-filled join code from URL:', this.joinCode);
             }
         },
@@ -451,6 +455,18 @@ function uplift() {
             this.currentNote = null;
         },
 
+        selectAction(action) {
+            this.selectedAction = action;
+            this.onboardingStep = 'name_entry';
+        },
+
+        goBackToChoice() {
+            this.onboardingStep = 'choice';
+            this.selectedAction = null;
+            this.userName = '';
+            this.joinCode = '';
+        },
+
         leaveSession() {
             // Close WebSocket connection
             if (this.ws) {
@@ -470,6 +486,8 @@ function uplift() {
             this.notesRemaining = 0;
             this.sessionComplete = false;
             this.receivedNotes = [];
+            this.onboardingStep = 'choice';
+            this.selectedAction = null;
 
             // Go back to home
             this.currentView = 'home';
