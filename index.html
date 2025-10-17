@@ -48,7 +48,7 @@
             <div x-show="currentView === 'home'" x-transition class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="card-title text-2xl">Uplift 👋</h2>
-                    <p class="text-base-content/70 mb-4">A beautiful way to feel seen and appreciated by your peers. Write heartfelt notes to each other, then take turns reading them out loud.</p>
+                    <p class="text-base-content/70 mb-4">A way to feel seen and appreciated by your peers. Write heartfelt notes to each other, then take turns reading them out loud.</p>
 
                     <div class="divider">Get Started</div>
 
@@ -271,7 +271,7 @@
                     <div x-show="sessionComplete" class="space-y-4" x-init="$watch('sessionComplete', value => { if (value) { for(let i = 0; i < 8; i++) { setTimeout(() => { const emoji = document.createElement('div'); emoji.textContent = '🫶'; emoji.className = 'float-emoji'; emoji.style.left = Math.random() * 90 + 5 + '%'; emoji.style.bottom = '0'; document.body.appendChild(emoji); setTimeout(() => emoji.remove(), 3000); }, i * 200); } } })">
                         <div class="alert alert-success shadow-lg">
                             <div class="text-center w-full">
-                                <h3 class="text-3xl font-bold">🫶 Beautiful! ✨</h3>
+                                <h3 class="text-3xl font-bold">🫶 Amazing! ✨</h3>
                                 <p class="mt-3 text-lg">Here's what your team shared about you:</p>
                             </div>
                         </div>
