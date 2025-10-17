@@ -43,8 +43,6 @@ function uplift() {
         // Completion
         receivedNotes: [],
 
-        // Theme
-        isDarkMode: false,
 
         // Notifications
         notifications: [],
@@ -85,15 +83,16 @@ function uplift() {
         },
 
         loadTheme() {
-            const savedTheme = localStorage.getItem('uplift-theme') || 'cupcake';
-            this.isDarkMode = savedTheme === 'sunset';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        },
+            // Detect system preference for dark mode
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = prefersDark ? 'sunset' : 'cupcake';
+            document.documentElement.setAttribute('data-theme', theme);
 
-        toggleTheme() {
-            const newTheme = this.isDarkMode ? 'sunset' : 'cupcake';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('uplift-theme', newTheme);
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                const newTheme = e.matches ? 'sunset' : 'cupcake';
+                document.documentElement.setAttribute('data-theme', newTheme);
+            });
         },
 
         connectWebSocket(onConnected) {
