@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cupcake">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uplift</title>
+    <script type="module" src="/main.js"></script>
+</head>
+<body class="min-h-screen bg-base-200">
+    <!-- Skip to main content link for keyboard users -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:btn focus:btn-primary">
+        Skip to main content
+    </a>
+
+    <div x-data="uplift()" class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <div class="flex justify-between items-center">
+                <div class="flex-1">
+                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-ghost btn-sm">Leave Session</button>
+                </div>
+                <h1 class="text-4xl font-bold text-primary flex-1">Uplift</h1>
+                <div class="flex-1 flex justify-end gap-2">
+                    <button @click="document.getElementById('how_it_works_modal').showModal()" class="btn btn-ghost btn-circle" aria-label="How it works">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
+                    <label class="swap swap-rotate btn btn-ghost btn-circle" aria-label="Toggle dark mode">
+                        <input type="checkbox" class="theme-controller" value="sunset" @change="toggleTheme()" x-model="isDarkMode" />
+                        <span class="swap-on text-2xl" aria-hidden="true">🌙</span>
+                        <span class="swap-off text-2xl" aria-hidden="true">☀️</span>
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <!-- Screen reader announcements for view changes -->
+            <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" x-text="
+                currentView === 'home' ? 'Home screen - create or join an uplift session' :
+                currentView === 'lobby' ? 'Lobby - waiting for participants' :
+                currentView === 'writing' ? 'Writing phase - write appreciation notes' :
+                currentView === 'reading' ? 'Reading phase - sharing notes aloud' : ''
+            "></div>
+
+            <!-- Screen reader announcements for events -->
+            <div class="sr-only" role="status" aria-live="assertive" aria-atomic="true" x-text="srAnnouncement"></div>
+
+            <!-- Home/Welcome Screen -->
+            <div x-show="currentView === 'home'" x-transition class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl">Uplift 👋</h2>
+                    <p class="text-base-content/70 mb-4">A beautiful way to feel seen and appreciated by your peers. Write heartfelt notes to each other, then take turns reading them out loud.</p>
+
+                    <div class="divider">Get Started</div>
+
+                    <!-- Name field (always required) -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Your Name</span>
+                        </label>
+                        <input
+                            type="text"
+                            x-model="userName"
+                            placeholder="Enter the name your team knows you by"
+                            @keyup.enter="joinCode ? joinSession() : createSession()"
+                            class="input input-bordered w-full">
+                    </div>
+
+                    <!-- Code field (only for joining) -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Session Code <span class="text-sm text-base-content/60">(optional - to join existing session)</span></span>
+                        </label>
+                        <input
+                            type="text"
+                            x-model="joinCode"
+                            placeholder="ABC123"
+                            @keyup.enter="joinSession()"
+                            class="input input-bordered w-full uppercase">
+                    </div>
+
+                    <!-- Two CTAs with clear messaging -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+                        <div class="card bg-base-200 border-2 border-transparent hover:border-primary transition-colors">
+                            <div class="card-body p-4">
+                                <h3 class="font-bold text-sm">Start New Session</h3>
+                                <p class="text-xs text-base-content/70 mb-2">Create a new session and invite your team</p>
+                                <button @click="createSession()" class="btn btn-primary btn-sm w-full" :disabled="isConnecting">
+                                    <span x-show="isConnecting" class="loading loading-spinner loading-sm"></span>
+                                    <span x-text="isConnecting ? 'Creating...' : 'Create New Session'"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card bg-base-200 border-2 border-transparent hover:border-secondary transition-colors">
+                            <div class="card-body p-4">
+                                <h3 class="font-bold text-sm">Join Existing Session</h3>
+                                <p class="text-xs text-base-content/70 mb-2">Enter a code to join your team's session</p>
+                                <button @click="joinSession()" class="btn btn-secondary btn-sm w-full" :disabled="isConnecting">
+                                    <span x-show="isConnecting" class="loading loading-spinner loading-sm"></span>
+                                    <span x-text="isConnecting ? 'Joining...' : 'Join Session'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Learn more section -->
+                    <div class="text-center mt-4">
+                        <button @click="document.getElementById('how_it_works_modal').showModal()" class="link link-primary text-sm">
+                            How does it work?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Lobby (Host View) -->
+            <div x-show="currentView === 'lobby'" x-transition class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl mb-2">Session Code: <span class="text-primary font-mono" x-text="sessionCode"></span></h2>
+                    <p class="text-base-content/70 mb-3">Share with your group:</p>
+
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                        <button @click="copySessionCode()" class="btn btn-outline btn-sm gap-2 flex-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Copy Code
+                        </button>
+                        <button @click="copyShareLink()" class="btn btn-primary btn-sm gap-2 flex-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            Copy Link
+                        </button>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div x-show="participants.length === 1" class="alert alert-info mb-4">
+                        <span>Waiting for people to join... ⏳</span>
+                    </div>
+
+                    <h3 class="text-lg font-semibold">Who's here (<span x-text="participants.length"></span>)</h3>
+                    <ul class="space-y-2">
+                        <template x-for="participant in participants" :key="participant.id">
+                            <li class="flex items-center gap-3 p-2 bg-base-200 rounded-lg">
+                                <div class="avatar avatar-placeholder">
+                                    <div class="w-10 rounded-full" :class="getAvatarColor(participant.name)">
+                                        <span class="text-sm" x-text="getInitials(participant.name)"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-1">
+                                    <span x-text="participant.name"></span>
+                                    <span class="badge badge-primary badge-sm" x-show="participant.isHost">Host</span>
+                                    <span class="badge badge-success badge-sm" x-show="recentlyJoinedIds.has(participant.id)">new</span>
+                                </div>
+                                <button
+                                    x-show="isHost && participant.id !== myId"
+                                    @click="confirmRemoveParticipant(participant)"
+                                    class="btn btn-ghost btn-sm btn-circle text-error"
+                                    aria-label="Remove participant">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-5 h-5 stroke-current" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+
+                    <div class="card-actions justify-end mt-4" x-show="isHost && participants.length > 1">
+                        <button @click="startWriting()" class="btn btn-primary">Start Writing</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Writing Phase -->
+            <div x-show="currentView === 'writing'" x-transition class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl">Time to write! ✍️</h2>
+
+                    <div class="alert alert-info">
+                        <div>
+                            <p class="font-semibold">Need a starting point?</p>
+                            <ul class="list-disc list-inside mt-2 text-sm">
+                                <li>"I admire about you..."</li>
+                                <li>"I appreciate about you..."</li>
+                                <li>"I am grateful for you..."</li>
+                            </ul>
+                            <p class="text-sm italic mt-2">The more specific you are, the more meaningful it will be!</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="participant in participants.filter(p => p.id !== myId)" :key="participant.id">
+                            <div class="card bg-base-200">
+                                <div class="card-body">
+                                    <h4 class="card-title text-lg">Note for <span x-text="participant.name"></span></h4>
+                                    <textarea
+                                        x-model="notes[participant.id]"
+                                        @input="updateNotesProgress()"
+                                        placeholder="Write your note of appreciation..."
+                                        rows="4"
+                                        class="textarea textarea-bordered w-full"></textarea>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="card-actions justify-end mt-4">
+                        <button @click="submitNotes()" :disabled="notesWritten < totalNotesNeeded" class="btn btn-primary">
+                            Submit Notes (<span x-text="notesWritten"></span>/<span x-text="totalNotesNeeded"></span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reading Phase -->
+            <div x-show="currentView === 'reading'" x-transition class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl">Time to share! 💌</h2>
+
+                    <div class="stats shadow mb-4 border-2" :class="isMyTurn ? 'border-success animate-pulse' : 'border-transparent'">
+                        <div class="stat">
+                            <div class="stat-title">Reading now</div>
+                            <div class="stat-value text-lg font-bold flex items-center gap-2" :class="isMyTurn ? 'text-success' : 'text-primary'">
+                                <span x-text="currentReader?.name"></span>
+                                <span x-show="isMyTurn" class="badge badge-success badge-lg bounce-limited">You!</span>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-title">Progress</div>
+                            <div class="stat-value text-primary">
+                                <span x-text="totalNotes - notesRemaining"></span>/<span x-text="totalNotes"></span>
+                            </div>
+                            <div class="stat-desc">notes read</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Reading progress</span>
+                            <span x-text="Math.round(((totalNotes - notesRemaining) / totalNotes) * 100) + '%'"></span>
+                        </div>
+                        <progress class="progress progress-primary w-full" :value="totalNotes - notesRemaining" :max="totalNotes"></progress>
+                    </div>
+
+                    <div x-show="isMyTurn && !currentNote" class="alert alert-success mb-4">
+                        <div>
+                            <p class="font-bold text-lg">It's your turn!</p>
+                            <button @click="drawNote()" x-init="$watch('isMyTurn', value => { if(value) setTimeout(() => $el.focus(), 100) })" class="btn btn-primary mt-2">Draw a Note</button>
+                        </div>
+                    </div>
+
+                    <div x-show="!isMyTurn && !sessionComplete" class="alert alert-info mb-4">
+                        <div>
+                            <p><strong x-text="currentReader?.name"></strong> is drawing a note...</p>
+                        </div>
+                    </div>
+
+                    <div x-show="currentNote" class="card bg-accent text-accent-content shadow-lg mb-4" :class="animateNote ? 'note-reveal-animation' : ''">
+                        <div class="card-body">
+                            <p class="text-sm opacity-70">For: <span class="font-semibold" x-text="currentNote?.recipient"></span></p>
+                            <p class="text-lg leading-relaxed mt-2" x-text="currentNote?.content"></p>
+                            <div class="card-actions justify-end mt-4" x-show="isMyTurn">
+                                <button @click="markNoteRead()" class="btn btn-primary min-h-[44px]">
+                                    Done Reading
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="sessionComplete" class="space-y-4" x-init="$watch('sessionComplete', value => { if (value) { for(let i = 0; i < 8; i++) { setTimeout(() => { const emoji = document.createElement('div'); emoji.textContent = '🫶'; emoji.className = 'float-emoji'; emoji.style.left = Math.random() * 90 + 5 + '%'; emoji.style.bottom = '0'; document.body.appendChild(emoji); setTimeout(() => emoji.remove(), 3000); }, i * 200); } } })">
+                        <div class="alert alert-success shadow-lg">
+                            <div class="text-center w-full">
+                                <h3 class="text-3xl font-bold">🫶 Beautiful! ✨</h3>
+                                <p class="mt-3 text-lg">Here's what your team shared about you:</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <template x-for="note in receivedNotes" :key="note.id">
+                                <div class="card bg-base-100 shadow">
+                                    <div class="card-body">
+                                        <p class="text-sm text-base-content/70 mb-2">From <span class="font-semibold" x-text="note.authorName"></span></p>
+                                        <p class="text-base leading-relaxed" x-text="note.content"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div x-show="receivedNotes.length === 0" class="text-center text-base-content/70 py-8">
+                            <p>Thank you for sharing appreciation together.</p>
+                        </div>
+
+                        <!-- Export buttons -->
+                        <div x-show="receivedNotes.length > 0" class="flex flex-col sm:flex-row gap-3 mt-6">
+                            <button @click="exportNotesAsText()" class="btn btn-outline gap-2 flex-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-5 h-5 stroke-current">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Download as Text
+                            </button>
+                            <button @click="printNotes()" class="btn btn-outline gap-2 flex-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-5 h-5 stroke-current">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                </svg>
+                                Print / Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Leave Session Confirmation Modal -->
+        <dialog id="leave_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Leave Session?</h3>
+                <p class="py-4">Are you sure you want to leave? You'll lose your progress and won't be able to rejoin this session.</p>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn btn-ghost">Cancel</button>
+                    </form>
+                    <button @click="leaveSession(); document.getElementById('leave_modal').close()" class="btn btn-error">Leave Session</button>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <!-- Remove Participant Confirmation Modal -->
+        <dialog id="remove_participant_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Remove Participant?</h3>
+                <p class="py-4">Are you sure you want to remove <strong x-text="participantToRemove?.name"></strong> from the session? They won't be able to rejoin.</p>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn btn-ghost">Cancel</button>
+                    </form>
+                    <button @click="removeParticipant()" class="btn btn-error">Remove</button>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <!-- How it Works Modal -->
+        <dialog id="how_it_works_modal" class="modal">
+            <div class="modal-box max-w-2xl">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="font-bold text-2xl mb-4">How Uplift Works</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="badge badge-primary badge-lg">1</div>
+                            <h4 class="font-bold text-lg">Gather</h4>
+                        </div>
+                        <p class="text-sm ml-10">One person starts a session and shares the code. Everyone joins using the same code. You need at least 2 people to begin.</p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="badge badge-primary badge-lg">2</div>
+                            <h4 class="font-bold text-lg">Write</h4>
+                        </div>
+                        <p class="text-sm ml-10">Everyone writes a note of appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful!</p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="badge badge-primary badge-lg">3</div>
+                            <h4 class="font-bold text-lg">Share</h4>
+                        </div>
+                        <p class="text-sm ml-10">Take turns drawing notes and reading them aloud to the group. This is where the magic happens—hearing appreciation spoken out loud creates powerful moments of connection.</p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="badge badge-primary badge-lg">4</div>
+                            <h4 class="font-bold text-lg">Reflect</h4>
+                        </div>
+                        <p class="text-sm ml-10">At the end, you'll see all the notes written for you. Take a moment to appreciate the love and recognition from your team.</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-success mt-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span><strong>Tip:</strong> Uplift works best when everyone is present and engaged. Find a quiet moment when your group can focus together.</span>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <!-- Toast Notifications -->
+        <div class="toast toast-top toast-center">
+            <template x-for="notification in notifications" :key="notification.id">
+                <div class="alert" :class="notification.type === 'error' ? 'alert-error' : 'alert-success'">
+                    <span x-text="notification.message"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+</body>
+</html>

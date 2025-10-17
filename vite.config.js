@@ -1,0 +1,30 @@
+// ABOUTME: Vite configuration for the Uplift web app
+// ABOUTME: Configures Tailwind CSS and DaisyUI processing via Vite, proxies WebSocket to Go backend
+import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [
+    tailwindcss()
+  ],
+  root: './',
+  publicDir: 'static',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: './index.html',
+      },
+    },
+  },
+  server: {
+    port: 3000,
+    proxy: {
+      '/ws': {
+        target: 'http://localhost:8080',
+        ws: true,
+      },
+    },
+  },
+});
