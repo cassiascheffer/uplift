@@ -19,7 +19,7 @@
         <header class="text-center mb-8">
             <div class="flex justify-between items-center">
                 <div class="flex-1">
-                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-outline btn-error btn-sm">Leave Session</button>
+                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-outline btn-error btn-sm min-h-[48px]">Leave Session</button>
                 </div>
                 <h1
                     class="text-4xl font-bold text-primary flex-1 cursor-pointer hover:opacity-80 transition-opacity text-center"
@@ -68,7 +68,7 @@
 
                             <button @click="selectAction('join')" class="card bg-base-200 border-2 border-transparent hover:border-secondary transition-all hover:scale-105 cursor-pointer">
                                 <div class="card-body p-6 text-center">
-                                    <div class="text-4xl mb-2">🤝</div>
+                                    <div class="text-4xl mb-2">🫶</div>
                                     <h3 class="font-bold text-lg mb-2">Join a session</h3>
                                     <p class="text-sm text-base-content/70">Use a code to join your team</p>
                                 </div>
@@ -86,7 +86,7 @@
                     <!-- Step 2: Name Entry (and code if joining) -->
                     <div x-show="onboardingStep === 'name_entry'" x-transition>
                         <!-- Back button (only if not from direct link) -->
-                        <button x-show="!fromDirectLink" @click="goBackToChoice()" class="btn btn-ghost btn-sm mb-4 gap-2">
+                        <button x-show="!fromDirectLink" @click="goBackToChoice()" class="btn btn-ghost btn-sm mb-4 gap-2 min-h-[48px]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
@@ -107,16 +107,16 @@
                                 placeholder="Enter a name you team knows you by"
                                 @keyup.enter="selectedAction === 'create' ? createSession() : joinSession()"
                                 x-init="setTimeout(() => $el.focus(), 100)"
-                                class="input input-bordered w-full"
+                                class="input input-bordered w-full min-h-[48px]"
                             >
                           <div class="dropdown dropdown-end">
-                            <div tabindex="0" role="button" class="btn btn-circle btn-ghost btn-xs text-info">
+                            <div tabindex="0" role="button" class="btn btn-circle btn-ghost btn-sm text-info min-h-[44px] min-w-[44px]">
                               <svg
                                 tabindex="0"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                class="h-4 w-4 stroke-current">
+                                class="h-5 w-5 stroke-current">
                                 <path
                                   stroke-linecap="round"
                                   stroke-linejoin="round"
@@ -128,7 +128,6 @@
                               tabindex="0"
                               class="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-64 shadow-sm">
                               <div tabindex="0" class="card-body">
-                                <h2 class="card-title">Please don't use an alias</h2>
                                 <p>Your team mates need to know who you are so they can write appreciation notes to you.</p>
                               </div>
                             </div>
@@ -145,7 +144,7 @@
                                 x-model="joinCode"
                                 placeholder="ABC123"
                                 @keyup.enter="joinSession()"
-                                class="input input-bordered w-full uppercase">
+                                class="input input-bordered w-full uppercase min-h-[48px]">
                         </div>
 
                         <!-- Code display (when from direct link) -->
@@ -213,7 +212,7 @@
                                 <button
                                     x-show="isHost && participant.id !== myId"
                                     @click="confirmRemoveParticipant(participant)"
-                                    class="btn btn-ghost btn-circle text-error"
+                                    class="btn btn-ghost btn-circle text-error min-h-[48px] min-w-[48px]"
                                     aria-label="Remove participant">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -239,27 +238,44 @@
                 <div class="card-body">
                     <!-- Show writing UI when not yet submitted -->
                     <div x-show="!hasSubmittedNotes">
-                        <h2 class="card-title text-2xl mb-6">Time to write! ✍️</h2>
+                        <h2 class="card-title text-2xl mb-6">Time to write! 💌</h2>
 
-                        <!-- Large prominent recipient display -->
-                        <div class="alert alert-success mb-6">
-                            <div class="w-full text-center">
-                                <p class="text-sm font-medium mb-2">Writing a note for:</p>
-                                <p class="text-4xl font-bold" x-text="getCurrentRecipient()?.name"></p>
+                        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+                          <input type="checkbox" />
+                          <div class="collapse-title font-semibold">Need a prompt?</div>
+                          <div class="collapse-content text-sm">
+                            <ul class="list-disc list-inside mt-2 text-sm">
+                                <li>"I admire that you…"</li>
+                                <li>"I appreciate your…"</li>
+                                <li>"I am grateful for you because…"</li>
+                            </ul>
+                            <p class="text-sm italic mt-2">Reference specific actions and attributes.</p>
+                          </div>
+                        </div>
+
+                        <!-- Stack of remaining notes to write -->
+                        <div class="mb-6 flex justify-center">
+                            <div class="stack w-full md:w-96 h-32">
+                              <template x-for="(recipient, index) in getRecipients().slice(currentNoteIndex)" :key="recipient.id">
+                                <div class="grid place-content-center rounded-box p-4"
+                                    :class="[
+                                        index % 8 === 0 ? 'bg-primary text-primary-content' : '',
+                                        index % 8 === 1 ? 'bg-secondary text-secondary-content' : '',
+                                        index % 8 === 2 ? 'bg-accent text-accent-content' : '',
+                                        index % 8 === 3 ? 'bg-info text-info-content' : '',
+                                        index % 8 === 4 ? 'bg-success text-success-content' : '',
+                                        index % 8 === 5 ? 'bg-warning text-warning-content' : '',
+                                        index % 8 === 6 ? 'bg-error text-error-content' : '',
+                                        index % 8 === 7 ? 'bg-neutral text-neutral-content' : '',
+                                        index === 0 ? 'border-4 border-base-content' : ''
+                                    ]">
+                                    <p class="text-sm font-medium mb-2" x-show="index === 0">Write a note of appreciation for:</p>
+                                    <p class="text-4xl font-bold" x-text="recipient.name"></p>
+                                </div>
+                              </template>
                             </div>
                         </div>
 
-                        <div class="alert alert-info mb-6">
-                            <div>
-                                <p class="font-semibold">Need a starting point?</p>
-                                <ul class="list-disc list-inside mt-2 text-sm">
-                                    <li>"I admire about you..."</li>
-                                    <li>"I appreciate about you..."</li>
-                                    <li>"I am grateful for you..."</li>
-                                </ul>
-                                <p class="text-sm italic mt-2">The more specific you are, the more meaningful it will be!</p>
-                            </div>
-                        </div>
 
                         <!-- Single textarea for current recipient -->
                         <div class="form-control mb-6">
@@ -388,9 +404,9 @@
                         <div x-show="receivedNotes.length > 0" class="flex flex-col sm:flex-row gap-3 mt-6">
                             <button @click="exportNotesAsText()" class="btn btn-outline gap-2 flex-1 min-h-[48px]">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-5 h-5 stroke-current">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                 </svg>
-                                Download as Text
+                                Copy to Clipboard
                             </button>
                             <button @click="printNotes()" class="btn btn-outline gap-2 flex-1 min-h-[48px]">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-5 h-5 stroke-current">
@@ -411,9 +427,9 @@
                 <p class="py-4">Are you sure you want to leave? You'll lose your progress and won't be able to rejoin this session.</p>
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn btn-ghost">Cancel</button>
+                        <button class="btn btn-ghost min-h-[48px]">Cancel</button>
                     </form>
-                    <button @click="leaveSession(); document.getElementById('leave_modal').close()" class="btn btn-error">Leave Session</button>
+                    <button @click="leaveSession(); document.getElementById('leave_modal').close()" class="btn btn-error min-h-[48px]">Leave Session</button>
                 </div>
             </div>
             <form method="dialog" class="modal-backdrop">
@@ -428,9 +444,9 @@
                 <p class="py-4">Are you sure you want to remove <strong x-text="participantToRemove?.name"></strong> from the session? They won't be able to rejoin.</p>
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn btn-ghost">Cancel</button>
+                        <button class="btn btn-ghost min-h-[48px]">Cancel</button>
                     </form>
-                    <button @click="removeParticipant()" class="btn btn-error">Remove</button>
+                    <button @click="removeParticipant()" class="btn btn-error min-h-[48px]">Remove</button>
                 </div>
             </div>
             <form method="dialog" class="modal-backdrop">
@@ -442,7 +458,7 @@
         <dialog id="how_it_works_modal" class="modal">
             <div class="modal-box max-w-2xl">
                 <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    <button class="btn btn-circle btn-ghost absolute right-2 top-2 min-h-[44px] min-w-[44px]">✕</button>
                 </form>
                 <h3 class="font-bold text-2xl mb-4">How Uplift Works</h3>
 
@@ -460,7 +476,7 @@
                             <div class="badge badge-primary badge-lg">2</div>
                             <h4 class="font-bold text-lg">Write</h4>
                         </div>
-                        <p class="text-sm ml-10">Everyone writes a note of appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful!</p>
+                        <p class="text-sm ml-10">Everyone writes a note of appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful.</p>
                     </div>
 
                     <div>
@@ -468,7 +484,7 @@
                             <div class="badge badge-primary badge-lg">3</div>
                             <h4 class="font-bold text-lg">Share</h4>
                         </div>
-                        <p class="text-sm ml-10">Take turns picking notes and reading them aloud to the group. This is where the magic happens—hearing appreciation spoken out loud creates powerful moments of connection.</p>
+                        <p class="text-sm ml-10">Take turns picking notes and reading them aloud to the group. Since notes don't have author names attached, Uplift emphasizes the group supporting one another instead of individual relationships.</p>
                     </div>
 
                     <div>
@@ -476,7 +492,7 @@
                             <div class="badge badge-primary badge-lg">4</div>
                             <h4 class="font-bold text-lg">Reflect</h4>
                         </div>
-                        <p class="text-sm ml-10">At the end, you'll see all the notes written for you. Take a moment to appreciate the love and recognition from your team.</p>
+                        <p class="text-sm ml-10">At the end, you'll see all the notes written for you. Take a moment to appreciate the recognition from your team. You can copy or print the affirmations to read again later.</p>
                     </div>
                 </div>
 

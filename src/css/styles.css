@@ -8,7 +8,12 @@
 @plugin "./catppuccin.mocha.js";
 
 @theme {
-  --font-family-sans: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Funnel Display", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Explicitly apply fonts to body and all elements */
+body {
+  font-family: "Funnel Display", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @keyframes float-up {
@@ -69,6 +74,11 @@
 .note-reveal-animation {
   animation: note-reveal 0.6s ease-out forwards;
   transform-style: preserve-3d;
+}
+
+/* Remove opacity from stack cards in writing phase */
+.stack > * {
+  opacity: 1 !important;
 }
 
 /* Enhanced keyboard focus indicators */
