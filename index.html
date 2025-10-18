@@ -282,13 +282,13 @@
                     <div x-show="isMyTurn && !currentNote && !sessionComplete && notesRemaining > 0" class="alert alert-success mb-4">
                         <div>
                             <p class="font-bold text-lg">It's your turn!</p>
-                            <button @click="drawNote()" x-init="$watch('isMyTurn', value => { if(value) setTimeout(() => $el.focus(), 100) })" class="btn btn-primary mt-2 min-h-[48px]">Draw a Note</button>
+                            <button @click="drawNote()" x-init="$watch('isMyTurn', value => { if(value) setTimeout(() => $el.focus(), 100) })" class="btn btn-primary mt-2 min-h-[48px]">Pick a note</button>
                         </div>
                     </div>
 
                     <div x-show="!isMyTurn && !sessionComplete" class="alert alert-info mb-4">
                         <div>
-                            <p><strong x-text="currentReader?.name"></strong> is drawing a note...</p>
+                            <p><strong x-text="currentReader?.name"></strong> is picking a note...</p>
                         </div>
                     </div>
 
@@ -411,7 +411,7 @@
                             <div class="badge badge-primary badge-lg">3</div>
                             <h4 class="font-bold text-lg">Share</h4>
                         </div>
-                        <p class="text-sm ml-10">Take turns drawing notes and reading them aloud to the group. This is where the magic happens—hearing appreciation spoken out loud creates powerful moments of connection.</p>
+                        <p class="text-sm ml-10">Take turns picking notes and reading them aloud to the group. This is where the magic happens—hearing appreciation spoken out loud creates powerful moments of connection.</p>
                     </div>
 
                     <div>

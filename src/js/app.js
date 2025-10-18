@@ -248,7 +248,7 @@ function uplift() {
                     this.isMyTurn = message.data.reader.id === this.myId;
                     this.currentNote = null; // Clear note from all screens when turn changes
                     if (this.isMyTurn) {
-                        this.announceToScreenReader("It's your turn to draw a note");
+                        this.announceToScreenReader("It's your turn to pick a note");
                     } else {
                         this.announceToScreenReader(`${this.currentReader.name} is now reading`);
                     }
@@ -264,7 +264,7 @@ function uplift() {
                     // Trigger animation
                     this.animateNote = true;
                     setTimeout(() => { this.animateNote = false; }, 600);
-                    this.announceToScreenReader(`Note drawn for ${this.currentNote.recipient}`);
+                    this.announceToScreenReader(`Note picked for ${this.currentNote.recipient}`);
                     break;
 
                 case 'session_complete':
@@ -305,7 +305,7 @@ function uplift() {
                         const participantCount = this.participants.length;
                         this.totalNotes = participantCount * (participantCount - 1);
                     }
-                    this.announceToScreenReader('Reading phase started. Take turns drawing and reading notes aloud.');
+                    this.announceToScreenReader('Reading phase started. Take turns picking and reading notes aloud.');
                     break;
 
                 case 'COMPLETE':
