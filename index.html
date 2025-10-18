@@ -202,6 +202,11 @@
                         </template>
                     </ul>
 
+                    <div x-show="!isHost && participants.length > 1" class="alert alert-info mt-4">
+                        <span class="loading loading-spinner loading-sm text-info"></span>
+                        <span>Waiting for host to start the session...</span>
+                    </div>
+
                     <div class="card-actions justify-end mt-4" x-show="isHost && participants.length > 1">
                         <button @click="startWriting()" class="btn btn-primary min-h-[48px]">Start Writing</button>
                     </div>
