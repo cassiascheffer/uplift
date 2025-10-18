@@ -3,6 +3,10 @@
   themes: bumblebee --default, halloween --prefersdark;
 }
 
+@theme {
+  --font-family-sans: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
+}
+
 @keyframes float-up {
   0% {
     transform: translateY(0) scale(0);
