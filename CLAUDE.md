@@ -113,6 +113,6 @@ The `go.mod` declares this as `github.com/cassiascheffer/uplift`. All internal i
 
 - Uses Tailwind CSS 4.0 via Vite plugin
 - DaisyUI 5.0 provides component classes
-- Two themes: "cupcake" (light) and "sunset" (dark)
+- Two themes: "bumblebee" (light) and "halloween" (dark)
 - Theme switching handled in Alpine.js with localStorage persistence
 - Custom animations and print styles in `src/css/styles.css`
