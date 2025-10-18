@@ -31,6 +31,8 @@ function uplift() {
         notesWritten: 0,
         totalNotesNeeded: 0,
         allNotesWritten: false,
+        currentNoteIndex: 0, // Track which participant we're writing for
+        hasSubmittedNotes: false, // Track if user has submitted
 
         // Reading phase
         currentReader: null,
@@ -289,6 +291,8 @@ function uplift() {
                 case 'WRITING':
                     this.currentView = 'writing';
                     this.totalNotesNeeded = this.participants.length - 1;
+                    this.currentNoteIndex = 0;
+                    this.hasSubmittedNotes = false;
                     this.updateNotesProgress();
                     this.announceToScreenReader('Writing phase started. Write a note of appreciation for each person.');
                     break;
@@ -304,6 +308,10 @@ function uplift() {
                     if (this.totalNotes === 0) {
                         const participantCount = this.participants.length;
                         this.totalNotes = participantCount * (participantCount - 1);
+                    }
+                    // Initialize notesRemaining to totalNotes when starting reading phase
+                    if (this.notesRemaining === 0) {
+                        this.notesRemaining = this.totalNotes;
                     }
                     this.announceToScreenReader('Reading phase started. Take turns picking and reading notes aloud.');
                     break;
@@ -412,6 +420,48 @@ function uplift() {
             });
         },
 
+        // Get the list of participants to write notes for (excluding self)
+        getRecipients() {
+            return this.participants.filter(p => p.id !== this.myId);
+        },
+
+        // Get the current recipient being written for
+        getCurrentRecipient() {
+            const recipients = this.getRecipients();
+            return recipients[this.currentNoteIndex] || null;
+        },
+
+        // Check if this is the last note
+        isLastNote() {
+            return this.currentNoteIndex >= this.getRecipients().length - 1;
+        },
+
+        // Move to next note
+        nextNote() {
+            const currentRecipient = this.getCurrentRecipient();
+            if (!currentRecipient) return;
+
+            // Save current note (even if empty)
+            const currentContent = this.notes[currentRecipient.id] || '';
+
+            if (this.isLastNote()) {
+                // This is the last note - submit all notes
+                this.submitNotes();
+            } else {
+                // Move to next recipient
+                this.currentNoteIndex++;
+                this.announceToScreenReader(`Writing note for ${this.getCurrentRecipient()?.name}`);
+            }
+        },
+
+        // Go back to previous note
+        previousNote() {
+            if (this.currentNoteIndex > 0) {
+                this.currentNoteIndex--;
+                this.announceToScreenReader(`Writing note for ${this.getCurrentRecipient()?.name}`);
+            }
+        },
+
         submitNotes() {
             const notesList = [];
             for (const [recipientId, content] of Object.entries(this.notes)) {
@@ -430,9 +480,9 @@ function uplift() {
                 }
             });
 
-            // Clear all notes after submission
-            this.notes = {};
-            this.notesWritten = 0;
+            // Mark as submitted and show waiting state
+            this.hasSubmittedNotes = true;
+            this.announceToScreenReader('Notes submitted. Waiting for others to finish writing.');
         },
 
         drawNote() {
