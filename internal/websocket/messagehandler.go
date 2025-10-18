@@ -82,6 +82,17 @@ func (mh *MessageHandler) HandleClientDisconnect(client *Client) {
 		}
 	}
 
+	// Check if session is now empty
+	if len(sess.Participants) == 0 {
+		// Remove session from manager
+		if err := mh.sessionManager.RemoveSession(sess.ID); err != nil {
+			log.Printf("Error removing empty session: %v", err)
+		} else {
+			log.Printf("Empty session cleaned up: session=%s", sess.Code)
+		}
+		return
+	}
+
 	// Broadcast participant left to remaining clients
 	broadcast := &Message{
 		Type: "participant_left",

@@ -92,6 +92,12 @@ func (c *Client) readPump() {
 				}
 				c.SendMessage(timeoutMsg)
 				time.Sleep(100 * time.Millisecond) // Give time for message to send
+				// Close with policy violation code (1008) for timeout
+				c.conn.WriteControl(
+					websocket.CloseMessage,
+					websocket.FormatCloseMessage(1008, "Inactivity timeout"),
+					time.Now().Add(writeWait),
+				)
 				c.conn.Close()
 				return
 			}
