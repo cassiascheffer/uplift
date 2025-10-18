@@ -7,16 +7,11 @@ export default defineConfig({
   plugins: [
     tailwindcss()
   ],
-  root: './',
-  publicDir: 'static',
+  root: 'src',
+  publicDir: '../static',
   build: {
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: './index.html',
-      },
-    },
   },
   server: {
     port: 3000,
