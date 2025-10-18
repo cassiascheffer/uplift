@@ -220,14 +220,6 @@
                     <div x-show="!hasSubmittedNotes">
                         <h2 class="card-title text-2xl mb-6">Time to write! ✍️</h2>
 
-                        <!-- Progress indicator -->
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="text-sm text-base-content/70">
-                                Note <span x-text="currentNoteIndex + 1"></span> of <span x-text="totalNotesNeeded"></span>
-                            </div>
-                            <progress class="progress progress-primary w-48" :value="currentNoteIndex + 1" :max="totalNotesNeeded"></progress>
-                        </div>
-
                         <!-- Large prominent recipient display -->
                         <div class="alert alert-success mb-6">
                             <div class="w-full text-center">
