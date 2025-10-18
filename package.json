@@ -12,6 +12,7 @@
     "vite": "^7.1.10"
   },
   "dependencies": {
+    "@catppuccin/daisyui": "^2.1.1",
     "alpinejs": "^3.15.0",
     "daisyui": "^5.0.0"
   }

@@ -113,6 +113,12 @@ The `go.mod` declares this as `github.com/cassiascheffer/uplift`. All internal i
 
 - Uses Tailwind CSS 4.0 via Vite plugin
 - DaisyUI 5.0 provides component classes
-- Two themes: "bumblebee" (light) and "halloween" (dark)
-- Theme switching handled in Alpine.js with localStorage persistence
+- Catppuccin colour themes via @catppuccin/daisyui package
+- Four theme variants available:
+  - **Latte**: Light theme with warm, pastel colours (default for light mode)
+  - **Frappé**: Medium-dark theme with cool, muted colours
+  - **Macchiato**: Dark theme with balanced, rich colours
+  - **Mocha**: Darkest theme with deep, vibrant colours (default for dark mode)
+- Theme switching handled in Alpine.js (`loadTheme()` function) based on system colour scheme preference
+- Each Catppuccin theme is imported via separate plugin file in `src/css/catppuccin.*.js`
 - Custom animations and print styles in `src/css/styles.css`

@@ -1,7 +1,11 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: bumblebee --default, halloween --prefersdark;
+  themes: false;
 }
+@plugin "./catppuccin.latte.js";
+@plugin "./catppuccin.frappe.js";
+@plugin "./catppuccin.macchiato.js";
+@plugin "./catppuccin.mocha.js";
 
 @theme {
   --font-family-sans: "Funnel Display", ui-sans-serif, system-ui, sans-serif;

@@ -19,10 +19,10 @@
         <header class="text-center mb-8">
             <div class="flex justify-between items-center">
                 <div class="flex-1">
-                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-ghost btn-sm">Leave Session</button>
+                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-outline btn-error btn-sm">Leave Session</button>
                 </div>
                 <h1
-                    class="text-4xl font-bold text-primary flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    class="text-4xl font-bold text-primary flex-1 cursor-pointer hover:opacity-80 transition-opacity text-center"
                     @click="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
                     role="button"
                     :aria-label="sessionCode && currentView !== 'home' ? 'Leave session and return home' : 'Uplift home'"
@@ -31,11 +31,7 @@
                     @keydown.space.prevent="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null">
                     Uplift
                 </h1>
-                <div class="flex-1 flex justify-end gap-2">
-                    <button @click="document.getElementById('how_it_works_modal').showModal()" class="btn btn-ghost btn-circle" aria-label="How it works">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </button>
-                </div>
+                <div class="flex-1"></div>
             </div>
         </header>
 
@@ -55,7 +51,7 @@
             <div x-show="currentView === 'home'" x-transition class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="card-title text-2xl">Uplift 👋</h2>
-                    <p class="text-base-content/70 mb-4">A way to feel seen and appreciated by your peers. Write heartfelt notes to each other, then take turns reading them out loud.</p>
+                    <p class="text-base-content/70 mb-4">Uplift is a way to uplift your peers and celerate thier work. Write heartfelt notes to each other, then take turns picking an unread note and reading it to your team.</p>
 
                     <div class="divider">Get Started</div>
 
@@ -103,15 +99,40 @@
                         <!-- Name field -->
                         <div class="form-control mb-4">
                             <label class="label">
-                                <span class="label-text font-semibold">Your Name</span>
+                                <span class="label-text font-semibold">Name</span>
                             </label>
                             <input
                                 type="text"
                                 x-model="userName"
-                                placeholder="Enter the name your team knows you by"
+                                placeholder="Enter a name you team knows you by"
                                 @keyup.enter="selectedAction === 'create' ? createSession() : joinSession()"
                                 x-init="setTimeout(() => $el.focus(), 100)"
-                                class="input input-bordered w-full">
+                                class="input input-bordered w-full"
+                            >
+                          <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-circle btn-ghost btn-xs text-info">
+                              <svg
+                                tabindex="0"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                class="h-4 w-4 stroke-current">
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                              </svg>
+                            </div>
+                            <div
+                              tabindex="0"
+                              class="card card-sm dropdown-content bg-base-100 rounded-box z-1 w-64 shadow-sm">
+                              <div tabindex="0" class="card-body">
+                                <h2 class="card-title">Please don't use an alias</h2>
+                                <p>Your team mates need to know who you are so they can write appreciation notes to you.</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         <!-- Code field (only when joining and not from direct link) -->

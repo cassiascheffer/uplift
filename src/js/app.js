@@ -90,12 +90,12 @@ function uplift() {
         loadTheme() {
             // Detect system preference for dark mode
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = prefersDark ? 'halloween' : 'bumblebee';
+            const theme = prefersDark ? 'mocha' : 'latte';
             document.documentElement.setAttribute('data-theme', theme);
 
             // Listen for system theme changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                const newTheme = e.matches ? 'halloween' : 'bumblebee';
+                const newTheme = e.matches ? 'mocha' : 'latte';
                 document.documentElement.setAttribute('data-theme', newTheme);
             });
         },
