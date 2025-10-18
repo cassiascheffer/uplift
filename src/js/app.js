@@ -250,6 +250,13 @@ function uplift() {
                     this.currentReader = message.data.reader;
                     this.isMyTurn = message.data.reader.id === this.myId;
                     this.currentNote = null; // Clear note from all screens when turn changes
+                    // Update progress tracking if provided
+                    if (message.data.remaining !== undefined) {
+                        this.notesRemaining = message.data.remaining;
+                    }
+                    if (message.data.total !== undefined && this.totalNotes === 0) {
+                        this.totalNotes = message.data.total;
+                    }
                     if (this.isMyTurn) {
                         this.shouldPulse = true;
                         setTimeout(() => { this.shouldPulse = false; }, 3000);

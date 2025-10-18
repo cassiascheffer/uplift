@@ -384,10 +384,14 @@ func (mh *MessageHandler) handleDrawNote(client *Client, msg *Message) {
 
 		// Broadcast turn change to all clients
 		newReader := sess.GetCurrentReader()
+		unreadNotes := sess.GetUnreadNotes()
+		totalNotes := len(sess.Notes)
 		broadcast := &Message{
 			Type: "turn_changed",
 			Data: map[string]interface{}{
-				"reader": newReader,
+				"reader":    newReader,
+				"remaining": len(unreadNotes),
+				"total":     totalNotes,
 			},
 		}
 		mh.hub.BroadcastToSession(sess.ID, broadcast)
@@ -405,6 +409,8 @@ func (mh *MessageHandler) handleDrawNote(client *Client, msg *Message) {
 	}
 
 	// Send note to all clients
+	unreadNotes := sess.GetUnreadNotes()
+	totalNotes := len(sess.Notes)
 	broadcast := &Message{
 		Type: "note_drawn",
 		Data: map[string]interface{}{
@@ -413,7 +419,8 @@ func (mh *MessageHandler) handleDrawNote(client *Client, msg *Message) {
 				"content":   randomNote.Content,
 				"recipient": recipientName,
 			},
-			"remaining": len(sess.GetUnreadNotes()) - 1,
+			"remaining": len(unreadNotes) - 1,
+			"total":     totalNotes,
 		},
 	}
 	mh.hub.BroadcastToSession(sess.ID, broadcast)
@@ -484,10 +491,14 @@ func (mh *MessageHandler) handleNoteRead(client *Client, msg *Message) {
 
 	// Send turn change to all clients
 	newReader := sess.GetCurrentReader()
+	unreadNotes := sess.GetUnreadNotes()
+	totalNotes := len(sess.Notes)
 	broadcast := &Message{
 		Type: "turn_changed",
 		Data: map[string]interface{}{
-			"reader": newReader,
+			"reader":    newReader,
+			"remaining": len(unreadNotes),
+			"total":     totalNotes,
 		},
 	}
 	mh.hub.BroadcastToSession(sess.ID, broadcast)
