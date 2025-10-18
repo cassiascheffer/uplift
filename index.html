@@ -279,7 +279,7 @@
                         <progress class="progress progress-primary w-full" :value="totalNotes - notesRemaining" :max="totalNotes"></progress>
                     </div>
 
-                    <div x-show="isMyTurn && !currentNote" class="alert alert-success mb-4">
+                    <div x-show="isMyTurn && !currentNote && !sessionComplete && notesRemaining > 0" class="alert alert-success mb-4">
                         <div>
                             <p class="font-bold text-lg">It's your turn!</p>
                             <button @click="drawNote()" x-init="$watch('isMyTurn', value => { if(value) setTimeout(() => $el.focus(), 100) })" class="btn btn-primary mt-2 min-h-[48px]">Draw a Note</button>
