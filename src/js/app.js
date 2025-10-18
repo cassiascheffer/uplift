@@ -13,6 +13,7 @@ function uplift() {
         // View state
         currentView: 'home', // home, create, join, lobby, writing, reading
         onboardingStep: 'choice', // choice, name_entry
+        fromDirectLink: false,
 
         // Session state
         sessionCode: '',
@@ -68,6 +69,7 @@ function uplift() {
                 this.joinCode = codeFromURL.toUpperCase();
                 this.selectedAction = 'join';
                 this.onboardingStep = 'name_entry';
+                this.fromDirectLink = true;
                 console.log('Pre-filled join code from URL:', this.joinCode);
             }
         },
@@ -464,6 +466,7 @@ function uplift() {
             this.selectedAction = null;
             this.userName = '';
             this.joinCode = '';
+            this.fromDirectLink = false;
         },
 
         leaveSession() {
