@@ -89,45 +89,90 @@ textarea:focus-visible,
 
 /* Print styles for exporting notes */
 @media print {
-  /* Hide everything except the notes */
+  /* Clean print layout */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide UI elements */
   header,
-  .btn,
   button,
+  .btn,
   .toast,
   .modal,
-  .alert:not(.alert-success),
-  [x-show]:not([x-show*="sessionComplete"]) {
+  .stats,
+  .progress,
+  .divider,
+  svg {
     display: none !important;
   }
 
-  /* Show only the completion section */
-  body {
-    background: white;
-    color: black;
+  /* Hide non-completion alerts */
+  .alert:not(.alert-success) {
+    display: none !important;
   }
 
-  .card {
-    box-shadow: none;
-    border: 1px solid #e5e7eb;
-    page-break-inside: avoid;
-  }
-
-  /* Format notes nicely for print */
-  .card-body {
-    padding: 1rem;
-  }
-
-  /* Add page breaks between notes if needed */
-  .space-y-3 > * {
-    page-break-inside: avoid;
-    margin-bottom: 1rem;
-  }
-
-  /* Print header with title */
+  /* Style the success header for print */
   .alert-success {
-    border: 2px solid #10b981;
-    background: white;
-    color: black;
-    margin-bottom: 1rem;
+    border: 2px solid #10b981 !important;
+    background: white !important;
+    color: black !important;
+    margin-bottom: 2rem !important;
+    page-break-after: avoid !important;
+    box-shadow: none !important;
+  }
+
+  /* Format note cards for print */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 1rem !important;
+    background: white !important;
+  }
+
+  .card-body {
+    padding: 1.5rem !important;
+  }
+
+  /* Ensure readable text */
+  p,
+  span {
+    color: black !important;
+  }
+
+  /* Author name styling */
+  .card-body p:first-child {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.75rem !important;
+    color: #6b7280 !important;
+  }
+
+  /* Note content styling */
+  .card-body p:last-child {
+    font-size: 1rem !important;
+    line-height: 1.75 !important;
+    color: black !important;
+  }
+
+  /* Page break handling */
+  .space-y-3 > .card {
+    page-break-inside: avoid !important;
+  }
+
+  /* Add page title */
+  .alert-success h3 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .alert-success p {
+    font-size: 1rem !important;
   }
 }
