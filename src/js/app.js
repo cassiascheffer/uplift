@@ -246,6 +246,7 @@ function uplift() {
                 case 'turn_changed':
                     this.currentReader = message.data.reader;
                     this.isMyTurn = message.data.reader.id === this.myId;
+                    this.currentNote = null; // Clear note from all screens when turn changes
                     if (this.isMyTurn) {
                         this.announceToScreenReader("It's your turn to draw a note");
                     } else {
