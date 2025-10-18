@@ -21,7 +21,16 @@
                 <div class="flex-1">
                     <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-ghost btn-sm">Leave Session</button>
                 </div>
-                <h1 class="text-4xl font-bold text-primary flex-1">Uplift</h1>
+                <h1
+                    class="text-4xl font-bold text-primary flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    @click="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
+                    role="button"
+                    :aria-label="sessionCode && currentView !== 'home' ? 'Leave session and return home' : 'Uplift home'"
+                    tabindex="0"
+                    @keydown.enter="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
+                    @keydown.space.prevent="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null">
+                    Uplift
+                </h1>
                 <div class="flex-1 flex justify-end gap-2">
                     <button @click="document.getElementById('how_it_works_modal').showModal()" class="btn btn-ghost btn-circle" aria-label="How it works">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
