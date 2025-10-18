@@ -11,9 +11,9 @@ This guide walks through deploying Uplift to Fly.io.
 
 2. Sign up or log in to Fly.io:
    ```bash
-   fly auth signup
+   flyctl auth signup
    # or if you already have an account:
-   fly auth login
+   flyctl auth login
    ```
 
 ## Deployment Files
@@ -37,7 +37,7 @@ The following files have been created for Fly.io deployment:
 
 1. **Create the Fly.io app** (if not already created):
    ```bash
-   fly launch --no-deploy
+   flyctl launch --no-deploy
    ```
 
    This will:
@@ -51,12 +51,12 @@ The following files have been created for Fly.io deployment:
    app = 'uplift'  # Change to your preferred name
 
    # Change region if desired (default: yyz - Toronto)
-   primary_region = 'yyz'  # See: fly platform regions
+   primary_region = 'yyz'  # See: flyctl platform regions
    ```
 
 3. **Deploy the application**:
    ```bash
-   fly deploy
+   flyctl deploy
    ```
 
    This will:
@@ -67,7 +67,7 @@ The following files have been created for Fly.io deployment:
 
 4. **Open your app**:
    ```bash
-   fly open
+   flyctl open
    ```
 
 ## Deployment Architecture
@@ -120,26 +120,26 @@ This means:
 
 ### Check Application Status
 ```bash
-fly status
+flyctl status
 ```
 
 ### View Logs
 ```bash
-fly logs
+flyctl logs
 ```
 
 ### Scale Resources (if needed)
 ```bash
 # Increase memory
-fly scale memory 512
+flyctl scale memory 512
 
 # Add more machines for high availability
-fly scale count 2
+flyctl scale count 2
 ```
 
 ### Set Secrets (if needed)
 ```bash
-fly secrets set SECRET_KEY=value
+flyctl secrets set SECRET_KEY=value
 ```
 
 ## Updating the Application
@@ -147,7 +147,7 @@ fly secrets set SECRET_KEY=value
 After making code changes:
 
 ```bash
-fly deploy
+flyctl deploy
 ```
 
 This rebuilds and redeploys automatically.
@@ -156,14 +156,14 @@ This rebuilds and redeploys automatically.
 
 ### View Metrics
 ```bash
-fly dashboard
+flyctl dashboard
 ```
 
 Or visit: https://fly.io/apps/[your-app-name]
 
 ### SSH into Running Machine
 ```bash
-fly ssh console
+flyctl ssh console
 ```
 
 ## Troubleshooting
@@ -179,7 +179,7 @@ docker build -t uplift:test .
 
 Check logs:
 ```bash
-fly logs
+flyctl logs
 ```
 
 Common issues:
