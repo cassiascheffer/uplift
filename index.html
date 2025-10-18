@@ -290,7 +290,7 @@
                 <div class="card-body">
                     <h2 class="card-title text-2xl">Time to share! 💌</h2>
 
-                    <div class="stats shadow mb-4 border-2" :class="isMyTurn ? 'border-success animate-pulse' : 'border-transparent'">
+                    <div x-show="!sessionComplete" class="stats shadow mb-4 border-2" :class="shouldPulse ? 'border-success animate-pulse' : (isMyTurn ? 'border-success' : 'border-transparent')'">
                         <div class="stat">
                             <div class="stat-title">Reading now</div>
                             <div class="stat-value text-lg font-bold flex items-center gap-2" :class="isMyTurn ? 'text-success' : 'text-primary'">
@@ -307,7 +307,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
+                    <div x-show="!sessionComplete" class="mb-4">
                         <div class="flex justify-between text-sm mb-1">
                             <span>Reading progress</span>
                             <span x-text="Math.round(((totalNotes - notesRemaining) / totalNotes) * 100) + '%'"></span>

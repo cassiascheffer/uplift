@@ -40,6 +40,7 @@ function uplift() {
         notesRemaining: 0,
         totalNotes: 0,
         isMyTurn: false,
+        shouldPulse: false,
         sessionComplete: false,
         animateNote: false,
 
@@ -250,6 +251,8 @@ function uplift() {
                     this.isMyTurn = message.data.reader.id === this.myId;
                     this.currentNote = null; // Clear note from all screens when turn changes
                     if (this.isMyTurn) {
+                        this.shouldPulse = true;
+                        setTimeout(() => { this.shouldPulse = false; }, 3000);
                         this.announceToScreenReader("It's your turn to pick a note");
                     } else {
                         this.announceToScreenReader(`${this.currentReader.name} is now reading`);
@@ -302,6 +305,10 @@ function uplift() {
                     if (data.currentReader) {
                         this.currentReader = data.currentReader;
                         this.isMyTurn = data.currentReader.id === this.myId;
+                        if (this.isMyTurn) {
+                            this.shouldPulse = true;
+                            setTimeout(() => { this.shouldPulse = false; }, 3000);
+                        }
                         console.log('Reading phase: currentReader=', this.currentReader, 'isMyTurn=', this.isMyTurn);
                     }
                     // Calculate total notes: each participant writes to everyone else
