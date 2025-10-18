@@ -491,6 +491,13 @@ function uplift() {
             this.receivedNotes = [];
             this.onboardingStep = 'choice';
             this.selectedAction = null;
+            this.joinCode = '';
+            this.fromDirectLink = false;
+
+            // Clear URL parameters
+            const url = new URL(window.location);
+            url.search = '';
+            window.history.replaceState({}, '', url);
 
             // Go back to home
             this.currentView = 'home';
