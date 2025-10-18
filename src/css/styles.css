@@ -113,6 +113,11 @@ textarea:focus-visible,
     display: none !important;
   }
 
+  /* Hide reading progress section (contains progress bar) */
+  div:has(> .progress) {
+    display: none !important;
+  }
+
   /* Hide non-completion alerts */
   .alert:not(.alert-success) {
     display: none !important;
