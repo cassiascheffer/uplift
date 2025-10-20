@@ -38,7 +38,6 @@ function uplift() {
     // STATE: VIEW & NAVIGATION
     // ============================================================
     currentView: 'home', // home, create, join, lobby, writing, reading, complete
-    onboardingStep: 'name_entry', // name_entry, action_choice
     fromDirectLink: false,
 
     // ============================================================
@@ -115,8 +114,6 @@ function uplift() {
       const codeFromURL = urlParams.get('code');
       if (codeFromURL) {
         this.joinCode = codeFromURL.toUpperCase();
-        this.selectedAction = 'join';
-        this.onboardingStep = 'name_entry'; // Still name_entry (now the first step)
         this.fromDirectLink = true;
         console.log('Pre-filled join code from URL:', this.joinCode);
       }
@@ -354,11 +351,10 @@ function uplift() {
           if (message.data.message && message.data.message.toLowerCase().includes('session')) {
             this.joinCode = '';
             this.clearSessionCodeFromURL();
-            // If we came from a direct link and joining failed, reset to home
+            // If we came from a direct link and joining failed, reset
             if (this.fromDirectLink) {
               this.fromDirectLink = false;
               this.selectedAction = null;
-              this.onboardingStep = 'name_entry';
             }
           }
           break;
@@ -588,25 +584,6 @@ function uplift() {
       this.currentNote = null;
     },
 
-    selectAction(action) {
-      this.selectedAction = action;
-      // No longer needed - action choice happens after name entry
-    },
-
-    proceedToActionChoice() {
-      if (!this.userName || !this.userName.trim()) {
-        this.showNotification('Please enter your name', 'error');
-        return;
-      }
-      this.onboardingStep = 'action_choice';
-    },
-
-    goBackToNameEntry() {
-      this.onboardingStep = 'name_entry';
-      this.selectedAction = null;
-      this.joinCode = '';
-      this.fromDirectLink = false;
-    },
 
     leaveSession() {
       // Close WebSocket connection
@@ -626,7 +603,6 @@ function uplift() {
       this.currentNote = null;
       this.notesRemaining = 0;
       this.receivedNotes = [];
-      this.onboardingStep = 'name_entry';
       this.selectedAction = null;
       this.joinCode = '';
       this.fromDirectLink = false;
