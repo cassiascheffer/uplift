@@ -27,6 +27,8 @@ func NewMessageHandler(hub *Hub, sessionManager *session.Manager) *MessageHandle
 func (mh *MessageHandler) HandleMessage(client *Client, msg *Message) {
 	log.Printf("HandleMessage: type=%s sessionID=%s userID=%s", msg.Type, client.sessionID, client.userID)
 	switch msg.Type {
+	case "validate_session":
+		mh.handleValidateSession(client, msg)
 	case "create_session":
 		mh.handleCreateSession(client, msg)
 	case "join_session":
@@ -105,6 +107,47 @@ func (mh *MessageHandler) HandleClientDisconnect(client *Client) {
 	mh.hub.BroadcastToSession(sess.ID, broadcast)
 
 	log.Printf("Participant removed from session: session=%s userId=%s wasHost=%v", sess.Code, participant.ID, wasHost)
+}
+
+// handleValidateSession validates if a session code exists without joining
+func (mh *MessageHandler) handleValidateSession(client *Client, msg *Message) {
+	sessionCode, ok := msg.Data["sessionCode"].(string)
+	if !ok || sessionCode == "" {
+		response := &Message{
+			Type: "session_validation",
+			Data: map[string]interface{}{
+				"valid": false,
+				"error": "session code required",
+			},
+		}
+		client.SendMessage(response)
+		return
+	}
+
+	// Check if session exists
+	_, err := mh.sessionManager.GetSessionByCode(sessionCode)
+	if err != nil {
+		response := &Message{
+			Type: "session_validation",
+			Data: map[string]interface{}{
+				"valid": false,
+				"error": "session not found",
+			},
+		}
+		client.SendMessage(response)
+		log.Printf("Session validation failed: code=%s", sessionCode)
+		return
+	}
+
+	// Session exists
+	response := &Message{
+		Type: "session_validation",
+		Data: map[string]interface{}{
+			"valid": true,
+		},
+	}
+	client.SendMessage(response)
+	log.Printf("Session validated: code=%s", sessionCode)
 }
 
 // handleCreateSession creates a new session

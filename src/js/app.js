@@ -116,7 +116,22 @@ function uplift() {
         this.joinCode = codeFromURL.toUpperCase();
         this.fromDirectLink = true;
         console.log('Pre-filled join code from URL:', this.joinCode);
+
+        // Validate the session code via WebSocket
+        this.validateSessionCode(this.joinCode);
       }
+    },
+
+    validateSessionCode(code) {
+      // Connect to WebSocket temporarily to validate the code
+      this.connectWebSocket(() => {
+        this.send({
+          type: 'validate_session',
+          data: {
+            sessionCode: code
+          }
+        });
+      });
     },
 
     clearSessionCodeFromURL() {
@@ -218,6 +233,22 @@ function uplift() {
       console.log('Received message:', message);
 
       switch (message.type) {
+        case 'session_validation':
+          if (!message.data.valid) {
+            this.showNotification('Invalid session code', 'error');
+            // Clear the invalid code
+            this.joinCode = '';
+            this.fromDirectLink = false;
+            this.clearSessionCodeFromURL();
+            // Close the WebSocket connection since we're not joining
+            if (this.ws) {
+              this.ws.close();
+              this.ws = null;
+            }
+          }
+          // If valid, keep the code and connection for joining
+          break;
+
         case 'session_created':
           this.sessionCode = message.data.sessionCode;
           this.myId = message.data.userId;
