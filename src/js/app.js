@@ -126,7 +126,7 @@ function uplift() {
     },
 
     generateFakeParticipants(count) {
-      const names = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'];
+      const names = ['Winter', 'Willow', 'Spring', 'Salix', 'Summer', 'Rose', 'Aster'];
       const participants = [];
 
       for (let i = 0; i < Math.min(count, names.length); i++) {
@@ -168,7 +168,6 @@ function uplift() {
       this.receivedNotes = fakeNoteContents.map((content, index) => ({
         id: `dev-received-${index}`,
         recipientId: this.myId,
-        authorName: this.participants[index + 1]?.name || 'Anonymous',
         content: content
       }));
     },
@@ -581,9 +580,6 @@ function uplift() {
       const currentRecipient = this.getCurrentRecipient();
       if (!currentRecipient) return;
 
-      // Save current note (even if empty)
-      const currentContent = this.notes[currentRecipient.id] || '';
-
       if (this.isLastNote()) {
         // This is the last note - submit all notes
         this.submitNotes();
@@ -739,6 +735,11 @@ function uplift() {
       return colors[Math.abs(hash) % colors.length];
     },
 
+    getCardColor(name) {
+      // Use same color assignment as avatar for consistency
+      return this.getAvatarColor(name);
+    },
+
     showNotification(message, type = 'success') {
       const id = Date.now();
       this.notifications.push({ id, message, type });
@@ -788,7 +789,7 @@ function uplift() {
       content += `\n${'='.repeat(50)}\n\n`;
 
       this.receivedNotes.forEach((note, index) => {
-        content += `Note ${index + 1} from ${note.authorName}:\n`;
+        content += `Note ${index + 1}:\n`;
         content += `${note.content}\n\n`;
         content += `${'-'.repeat(50)}\n\n`;
       });

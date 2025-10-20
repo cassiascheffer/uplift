@@ -19,7 +19,7 @@
         <header class="text-center mb-8">
             <div class="flex justify-between items-center">
                 <div class="flex-1">
-                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-outline btn-error btn-sm min-h-[48px]">Leave Session</button>
+                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-soft btn-accent btn-sm lg:btn-xs">Leave Session</button>
                 </div>
                 <h1
                     class="text-4xl font-bold text-primary flex-1 cursor-pointer hover:opacity-80 transition-opacity text-center"
@@ -161,8 +161,8 @@
                             class="btn w-full min-h-[48px]"
                             :class="selectedAction === 'create' ? 'btn-primary' : 'btn-secondary'"
                             :disabled="isConnecting">
-                            <span x-show="isConnecting" class="loading loading-spinner loading-sm"></span>
-                            <span x-text="isConnecting ? (selectedAction === 'create' ? 'Creating...' : 'Joining...') : (selectedAction === 'create' ? 'Create Session' : 'Join Session')"></span>
+                            <span x-show="isConnecting" class="loading loading-ring loading-sm"></span>
+                            <span x-text="isConnecting ? (selectedAction === 'create' ? 'Creating…' : 'Joining…') : (selectedAction === 'create' ? 'Create Session' : 'Join Session')"></span>
                         </button>
                     </div>
                 </div>
@@ -192,7 +192,7 @@
                     <div class="divider"></div>
 
                     <div x-show="participants.length === 1" class="alert alert-info mb-4">
-                        <span>Waiting for people to join... ⏳</span>
+                        <span>Waiting for people to join… ⏳</span>
                     </div>
 
                     <h3 class="text-lg font-semibold">Who's here (<span x-text="participants.length"></span>)</h3>
@@ -223,8 +223,8 @@
                     </ul>
 
                     <div x-show="!isHost && participants.length > 1" class="alert alert-info mt-4">
-                        <span class="loading loading-spinner loading-sm"></span>
-                        <span>Waiting for host to start the session...</span>
+                        <span class="loading loading-ring loading-sm"></span>
+                        <span>Waiting for host to start the session…</span>
                     </div>
 
                     <div class="card-actions justify-end mt-4" x-show="isHost && participants.length > 1">
@@ -240,7 +240,7 @@
                     <div x-show="!hasSubmittedNotes">
                         <h2 class="card-title text-2xl mb-6">Time to write! 💌</h2>
 
-                        <div class="collapse collapse-arrow bg-base-100 border border-base-300">
+                        <div class="collapse collapse-arrow bg-base-100 border border-base-300 mb-6">
                           <input type="checkbox" />
                           <div class="collapse-title font-semibold">Need a prompt?</div>
                           <div class="collapse-content text-sm">
@@ -253,39 +253,24 @@
                           </div>
                         </div>
 
-                        <!-- Stack of remaining notes to write -->
-                        <div class="mb-6 flex justify-center">
-                            <div class="stack w-full md:w-96 h-32">
-                              <template x-for="(recipient, index) in getRecipients().slice(currentNoteIndex)" :key="recipient.id">
-                                <div class="grid place-content-center rounded-box p-4"
-                                    :class="[
-                                        index % 8 === 0 ? 'bg-primary text-primary-content' : '',
-                                        index % 8 === 1 ? 'bg-secondary text-secondary-content' : '',
-                                        index % 8 === 2 ? 'bg-accent text-accent-content' : '',
-                                        index % 8 === 3 ? 'bg-info text-info-content' : '',
-                                        index % 8 === 4 ? 'bg-success text-success-content' : '',
-                                        index % 8 === 5 ? 'bg-warning text-warning-content' : '',
-                                        index % 8 === 6 ? 'bg-error text-error-content' : '',
-                                        index % 8 === 7 ? 'bg-neutral text-neutral-content' : '',
-                                        index === 0 ? 'border-4 border-base-content' : ''
-                                    ]">
-                                    <p class="text-sm font-medium mb-2" x-show="index === 0">Write a note of appreciation for:</p>
-                                    <p class="text-4xl font-bold" x-text="recipient.name"></p>
+                        <!-- Current note card -->
+                        <div class="mb-6 flex justify-center" x-show="getCurrentRecipient()">
+                            <div class="card text-center w-full max-w-2xl" :class="getCurrentRecipient() ? getCardColor(getCurrentRecipient().name) : ''">
+                                <div class="card-body">
+                                    <p class="text-sm font-medium mb-2">Write a note of appreciation for:</p>
+                                    <p class="text-4xl font-bold mb-2" x-text="getCurrentRecipient()?.name"></p>
+                                    <div class="form-control">
+                                        <textarea
+                                            :value="getCurrentRecipient() ? notes[getCurrentRecipient().id] || '' : ''"
+                                            @input="if (getCurrentRecipient()) { notes[getCurrentRecipient().id] = $event.target.value; updateNotesProgress(); }"
+                                            placeholder="Write your note of appreciation…"
+                                            rows="4"
+                                            class="textarea w-full text-md bg-transparent border-current"
+                                            x-init="setTimeout(() => $el.focus(), 100)"
+                                        ></textarea>
+                                    </div>
                                 </div>
-                              </template>
                             </div>
-                        </div>
-
-
-                        <!-- Single textarea for current recipient -->
-                        <div class="form-control mb-6">
-                            <textarea
-                                x-model="notes[getCurrentRecipient()?.id]"
-                                @input="updateNotesProgress()"
-                                placeholder="Write your note of appreciation..."
-                                rows="8"
-                                class="textarea textarea-bordered w-full text-lg"
-                                x-init="setTimeout(() => $el.focus(), 100)"></textarea>
                         </div>
 
                         <!-- Navigation buttons -->
@@ -314,9 +299,9 @@
                             </svg>
                         </div>
                         <h3 class="text-2xl font-bold mb-4">Notes submitted!</h3>
-                        <p class="text-lg text-base-content/70 mb-6">Waiting for others to finish writing...</p>
+                        <p class="text-lg text-base-content/70 mb-6">Waiting for others to finish writing.</p>
                         <div class="flex justify-center">
-                            <span class="loading loading-spinner w-16 h-16 text-primary"></span>
+                            <span class="loading loading-ring loading-xl"></span>
                         </div>
                     </div>
                 </div>
@@ -325,33 +310,15 @@
             <!-- Reading Phase -->
             <div x-show="currentView === 'reading'" x-transition class="card bg-base-100 shadow-xl">
                 <div class="card-body">
-                    <h2 class="card-title text-2xl">Time to share! 💌</h2>
-
-                    <div x-show="!sessionComplete" class="stats shadow mb-4 border-2" :class="shouldPulse ? 'border-success animate-pulse' : (isMyTurn ? 'border-success' : 'border-transparent')'">
-                        <div class="stat">
-                            <div class="stat-title">Reading now</div>
-                            <div class="stat-value text-lg font-bold flex items-center gap-2" :class="isMyTurn ? 'text-success' : 'text-primary'">
-                                <span x-text="currentReader?.name"></span>
-                                <span x-show="isMyTurn" class="badge badge-success badge-lg bounce-limited">Your turn</span>
-                            </div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-title">Progress</div>
-                            <div class="stat-value text-primary">
-                                <span x-text="totalNotes - notesRemaining"></span>/<span x-text="totalNotes"></span>
-                            </div>
-                            <div class="stat-desc">notes read</div>
-                        </div>
-                    </div>
+                    <h2 class="card-title text-2xl">Time to share! ❣️</h2>
 
                     <div x-show="!sessionComplete" class="mb-4">
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Reading progress</span>
-                            <span x-text="Math.round(((totalNotes - notesRemaining) / totalNotes) * 100) + '%'"></span>
+                        <div class="text-sm text-base-content/70 mb-1">Reading now</div>
+                        <div class="text-lg font-bold flex items-center gap-2" :class="isMyTurn ? 'text-success' : 'text-primary'">
+                            <span x-text="currentReader?.name"></span>
+                            <span x-show="isMyTurn" class="badge badge-success badge-lg">Your turn</span>
                         </div>
-                        <progress class="progress progress-primary w-full" :value="totalNotes - notesRemaining" :max="totalNotes"></progress>
                     </div>
-
                     <div x-show="isMyTurn && !currentNote && !sessionComplete && notesRemaining > 0" class="alert alert-success mb-4">
                         <div>
                             <p class="font-bold text-lg">It's your turn!</p>
@@ -361,11 +328,11 @@
 
                     <div x-show="!isMyTurn && !sessionComplete" class="alert alert-info mb-4">
                         <div>
-                            <p><strong x-text="currentReader?.name"></strong> is picking a note...</p>
+                            <p><strong x-text="currentReader?.name"></strong> is picking a note…</p>
                         </div>
                     </div>
 
-                    <div x-show="currentNote" class="card bg-accent text-accent-content shadow-lg mb-4" :class="animateNote ? 'note-reveal-animation' : ''">
+                    <div x-show="currentNote" class="card shadow-lg mb-4" :class="[animateNote ? 'note-reveal-animation' : '', currentNote ? getAvatarColor(currentNote.recipient) : '']">
                         <div class="card-body">
                             <p class="text-sm opacity-70">For: <span class="font-semibold" x-text="currentNote?.recipient"></span></p>
                             <p class="text-lg leading-relaxed mt-2" x-text="currentNote?.content"></p>
@@ -380,8 +347,7 @@
                     <div x-show="sessionComplete" class="space-y-4" x-init="$watch('sessionComplete', value => { if (value) { for(let i = 0; i < 8; i++) { setTimeout(() => { const emoji = document.createElement('div'); emoji.textContent = '🫶'; emoji.className = 'float-emoji'; emoji.style.left = Math.random() * 90 + 5 + '%'; emoji.style.bottom = '0'; document.body.appendChild(emoji); setTimeout(() => emoji.remove(), 3000); }, i * 200); } } })">
                         <div class="alert alert-success shadow-lg">
                             <div class="text-center w-full">
-                                <h3 class="text-3xl font-bold">🫶 Amazing! ✨</h3>
-                                <p class="mt-3 text-lg">Here's what your team shared about you:</p>
+                                <h3 class="mt-3 text-lg">🫶 Here's what your team shared with you:</p>
                             </div>
                         </div>
 
@@ -389,7 +355,6 @@
                             <template x-for="note in receivedNotes" :key="note.id">
                                 <div class="card bg-base-100 shadow">
                                     <div class="card-body">
-                                        <p class="text-sm text-base-content/70 mb-2">From <span class="font-semibold" x-text="note.authorName"></span></p>
                                         <p class="text-base leading-relaxed" x-text="note.content"></p>
                                     </div>
                                 </div>

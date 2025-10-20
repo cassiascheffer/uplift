@@ -354,19 +354,13 @@ func (mh *MessageHandler) handleDrawNote(client *Client, msg *Message) {
 
 		// Check if session is complete
 		if sess.Phase == session.PhaseComplete {
-			// Prepare notes with participant names
-			notesWithNames := []map[string]interface{}{}
+			// Prepare notes (anonymous - no author names)
+			anonymousNotes := []map[string]interface{}{}
 			for _, note := range sess.Notes {
-				author := sess.Participants[note.AuthorID]
-				recipient := sess.Participants[note.RecipientID]
-
-				notesWithNames = append(notesWithNames, map[string]interface{}{
-					"id":            note.ID,
-					"content":       note.Content,
-					"authorId":      note.AuthorID,
-					"authorName":    author.Name,
-					"recipientId":   note.RecipientID,
-					"recipientName": recipient.Name,
+				anonymousNotes = append(anonymousNotes, map[string]interface{}{
+					"id":          note.ID,
+					"content":     note.Content,
+					"recipientId": note.RecipientID,
 				})
 			}
 
@@ -374,7 +368,7 @@ func (mh *MessageHandler) handleDrawNote(client *Client, msg *Message) {
 				Type: "session_complete",
 				Data: map[string]interface{}{
 					"message": "All notes have been read. Thank you for participating!",
-					"notes":   notesWithNames,
+					"notes":   anonymousNotes,
 				},
 			}
 			mh.hub.BroadcastToSession(sess.ID, broadcast)
@@ -461,19 +455,13 @@ func (mh *MessageHandler) handleNoteRead(client *Client, msg *Message) {
 
 	// Check if session is complete
 	if sess.Phase == session.PhaseComplete {
-		// Prepare notes with participant names
-		notesWithNames := []map[string]interface{}{}
+		// Prepare notes (anonymous - no author names)
+		anonymousNotes := []map[string]interface{}{}
 		for _, note := range sess.Notes {
-			author := sess.Participants[note.AuthorID]
-			recipient := sess.Participants[note.RecipientID]
-
-			notesWithNames = append(notesWithNames, map[string]interface{}{
+			anonymousNotes = append(anonymousNotes, map[string]interface{}{
 				"id":          note.ID,
 				"content":     note.Content,
-				"authorId":    note.AuthorID,
-				"authorName":  author.Name,
 				"recipientId": note.RecipientID,
-				"recipientName": recipient.Name,
 			})
 		}
 
@@ -481,7 +469,7 @@ func (mh *MessageHandler) handleNoteRead(client *Client, msg *Message) {
 			Type: "session_complete",
 			Data: map[string]interface{}{
 				"message": "All notes have been read. Thank you for participating!",
-				"notes":   notesWithNames,
+				"notes":   anonymousNotes,
 			},
 		}
 		mh.hub.BroadcastToSession(sess.ID, broadcast)

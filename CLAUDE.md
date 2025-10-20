@@ -40,6 +40,30 @@ Currently, there are no automated tests in this codebase. When implementing test
 - Create frontend tests for Alpine.js components
 - Add integration tests for WebSocket message handling
 
+### Dev Mode (Frontend Testing)
+
+The frontend includes a dev mode for testing different session phases without creating real WebSocket sessions. Use URL parameters to specify the phase and number of participants:
+
+**URL Parameters:**
+- `dev=true` - Enable dev mode
+- `phase=<phase>` - Specify phase: `lobby`, `writing`, `reading`, or `complete` (default: `lobby`)
+- `participants=<count>` - Number of fake participants (1-10, default: 3)
+
+**Example URLs:**
+```
+# Lobby with 5 participants
+http://localhost:3001/?dev=true&participants=5
+
+# Writing phase with 4 participants
+http://localhost:3001/?dev=true&phase=writing&participants=4
+
+# Reading phase with 3 participants
+http://localhost:3001/?dev=true&phase=reading&participants=3
+
+# Complete phase with 5 participants
+http://localhost:3001/?dev=true&phase=complete&participants=5
+```
+
 ### Production Deployment
 
 ```bash

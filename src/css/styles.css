@@ -1,7 +1,5 @@
 @import "tailwindcss";
-@plugin "daisyui" {
-  themes: false;
-}
+@plugin "daisyui";
 @plugin "./catppuccin.latte.js";
 @plugin "./catppuccin.frappe.js";
 @plugin "./catppuccin.macchiato.js";
@@ -74,11 +72,6 @@ body {
 .note-reveal-animation {
   animation: note-reveal 0.6s ease-out forwards;
   transform-style: preserve-3d;
-}
-
-/* Remove opacity from stack cards in writing phase */
-.stack > * {
-  opacity: 1 !important;
 }
 
 /* Enhanced keyboard focus indicators */
