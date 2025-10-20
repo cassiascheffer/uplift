@@ -5,6 +5,7 @@ package session
 import (
 	"errors"
 	"log"
+	"strings"
 	"sync"
 )
 
@@ -30,9 +31,11 @@ func (m *Manager) CreateSession(hostName string) *Session {
 
 	session := NewSession(hostName)
 	m.sessions[session.ID] = session
-	m.sessionsByCode[session.Code] = session
+	// Normalize session code to uppercase for consistent lookups
+	normalizedCode := strings.ToUpper(strings.TrimSpace(session.Code))
+	m.sessionsByCode[normalizedCode] = session
 
-	log.Printf("Session created: id=%s code=%s totalSessions=%d", session.ID, session.Code, len(m.sessions))
+	log.Printf("Session created: id=%s code=%s totalSessions=%d", session.ID, normalizedCode, len(m.sessions))
 	return session
 }
 
@@ -54,13 +57,16 @@ func (m *Manager) GetSessionByCode(code string) (*Session, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	session, exists := m.sessionsByCode[code]
+	// Normalize code to uppercase for case-insensitive lookup
+	normalizedCode := strings.ToUpper(strings.TrimSpace(code))
+
+	session, exists := m.sessionsByCode[normalizedCode]
 	if !exists {
-		log.Printf("Session lookup failed: code=%s totalSessions=%d", code, len(m.sessions))
+		log.Printf("Session lookup failed: code=%s (normalized=%s) totalSessions=%d", code, normalizedCode, len(m.sessions))
 		return nil, errors.New("session not found")
 	}
 
-	log.Printf("Session found: code=%s id=%s", code, session.ID)
+	log.Printf("Session found: code=%s id=%s", normalizedCode, session.ID)
 	return session, nil
 }
 
@@ -75,7 +81,9 @@ func (m *Manager) RemoveSession(sessionID string) error {
 	}
 
 	delete(m.sessions, sessionID)
-	delete(m.sessionsByCode, session.Code)
+	// Normalize session code for deletion
+	normalizedCode := strings.ToUpper(strings.TrimSpace(session.Code))
+	delete(m.sessionsByCode, normalizedCode)
 
 	return nil
 }
