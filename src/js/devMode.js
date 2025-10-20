@@ -49,8 +49,7 @@ function initDevSession(context, phase, participantCount) {
       break;
 
     case 'complete':
-      context.currentView = 'reading';
-      context.sessionComplete = true;
+      context.currentView = 'complete';
       generateFakeReceivedNotes(context);
       break;
 

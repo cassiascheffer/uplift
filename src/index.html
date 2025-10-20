@@ -41,7 +41,8 @@
                 currentView === 'home' ? 'Home screen - create or join an uplift session' :
                 currentView === 'lobby' ? 'Lobby - waiting for participants' :
                 currentView === 'writing' ? 'Writing phase - write appreciation notes' :
-                currentView === 'reading' ? 'Reading phase - sharing notes aloud' : ''
+                currentView === 'reading' ? 'Reading phase - sharing notes aloud' :
+                currentView === 'complete' ? 'Session complete - view your received notes' : ''
             "></div>
 
             <!-- Screen reader announcements for events -->
@@ -55,49 +56,13 @@
 
                     <div class="divider">Get Started</div>
 
-                    <!-- Step 1: Choose Action (only shown when no direct link) -->
-                    <div x-show="onboardingStep === 'choice'" x-transition>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <button @click="selectAction('create')" class="card bg-base-200 border-2 border-transparent hover:border-primary transition-all hover:scale-105 cursor-pointer">
-                                <div class="card-body p-6 text-center">
-                                    <div class="text-4xl mb-2">✨</div>
-                                    <h3 class="font-bold text-lg mb-2">Start a new session</h3>
-                                    <p class="text-sm text-base-content/70">Create a session and invite your team</p>
-                                </div>
-                            </button>
-
-                            <button @click="selectAction('join')" class="card bg-base-200 border-2 border-transparent hover:border-secondary transition-all hover:scale-105 cursor-pointer">
-                                <div class="card-body p-6 text-center">
-                                    <div class="text-4xl mb-2">🫶</div>
-                                    <h3 class="font-bold text-lg mb-2">Join a session</h3>
-                                    <p class="text-sm text-base-content/70">Use a code to join your team</p>
-                                </div>
-                            </button>
-                        </div>
-
-                        <!-- Learn more section -->
-                        <div class="text-center mt-6">
-                            <button @click="document.getElementById('how_it_works_modal').showModal()" class="link link-primary text-sm">
-                                How does it work?
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Name Entry (and code if joining) -->
+                    <!-- Step 1: Name Entry -->
                     <div x-show="onboardingStep === 'name_entry'" x-transition>
-                        <!-- Back button (only if not from direct link) -->
-                        <button x-show="!fromDirectLink" @click="goBackToChoice()" class="btn btn-ghost btn-sm mb-4 gap-2 min-h-[48px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                            Back
-                        </button>
-
-                        <!-- Title based on action -->
-                        <h3 class="text-lg font-bold mb-4" x-text="selectedAction === 'create' ? 'Create a new session' : 'Join a session'"></h3>
+                        <!-- Title (dynamic based on whether joining from direct link) -->
+                        <h3 x-show="fromDirectLink" class="text-lg font-bold mb-4">Join a session</h3>
 
                         <!-- Code display (when from direct link) -->
-                        <div x-show="selectedAction === 'join' && fromDirectLink" class="alert alert-info alert-soft mb-4">
+                        <div x-show="fromDirectLink" class="alert alert-info alert-soft mb-4">
                             <div>
                               <p class="font-semibold">
                                 Joining session: <span class="font-mono" x-text="joinCode"></span>
@@ -113,8 +78,8 @@
                             <input
                                 type="text"
                                 x-model="userName"
-                                placeholder="Enter a name you team knows you by"
-                                @keyup.enter="selectedAction === 'create' ? createSession() : joinSession()"
+                                placeholder="Enter a name your team knows you by"
+                                @keyup.enter="fromDirectLink ? joinSession() : proceedToActionChoice()"
                                 x-init="setTimeout(() => $el.focus(), TIMING.FOCUS_DELAY)"
                                 class="input input-bordered w-full min-h-[48px]"
                             >
@@ -143,8 +108,56 @@
                           </div>
                         </div>
 
-                        <!-- Code field (only when joining and not from direct link) -->
-                        <div x-show="selectedAction === 'join' && !fromDirectLink" class="form-control mb-4">
+                        <!-- Continue/Join button -->
+                        <button
+                            @click="fromDirectLink ? joinSession() : proceedToActionChoice()"
+                            class="btn w-full min-h-[48px]"
+                            :class="fromDirectLink ? 'btn-secondary' : 'btn-primary'"
+                            :disabled="isConnecting">
+                            <span x-show="isConnecting" class="loading loading-ring loading-sm"></span>
+                            <span x-text="isConnecting ? 'Joining…' : (fromDirectLink ? 'Join Session' : 'Continue')"></span>
+                        </button>
+
+                        <!-- Learn more section -->
+                        <div x-show="!fromDirectLink" class="text-center mt-6">
+                            <button @click="document.getElementById('how_it_works_modal').showModal()" class="link link-primary text-sm">
+                                How does it work?
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Choose Action -->
+                    <div x-show="onboardingStep === 'action_choice'" x-transition>
+                        <!-- Back button -->
+                        <button @click="goBackToNameEntry()" class="btn btn-ghost btn-sm mb-4 gap-2 min-h-[48px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Back
+                        </button>
+
+                        <h3 class="text-lg font-bold mb-4">Hi <span x-text="userName"></span>! What would you like to do?</h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <button @click="selectAction('create'); createSession();" class="card bg-base-200 border-2 border-transparent hover:border-primary transition-all hover:scale-105 cursor-pointer">
+                                <div class="card-body p-6 text-center">
+                                    <div class="text-4xl mb-2">✨</div>
+                                    <h3 class="font-bold text-lg mb-2">Start a new session</h3>
+                                    <p class="text-sm text-base-content/70">Create a session and invite your team</p>
+                                </div>
+                            </button>
+
+                            <button @click="selectAction('join'); $nextTick(() => $el.closest('.card-body').querySelector('input[type=text]')?.focus());" class="card bg-base-200 border-2 border-transparent hover:border-secondary transition-all hover:scale-105 cursor-pointer">
+                                <div class="card-body p-6 text-center">
+                                    <div class="text-4xl mb-2">🫶</div>
+                                    <h3 class="font-bold text-lg mb-2">Join a session</h3>
+                                    <p class="text-sm text-base-content/70">Use a code to join your team</p>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Code field (shown after selecting join) -->
+                        <div x-show="selectedAction === 'join'" x-transition class="form-control mb-4">
                             <label class="label">
                                 <span class="label-text font-semibold">Session Code</span>
                             </label>
@@ -153,17 +166,18 @@
                                 x-model="joinCode"
                                 placeholder="ABC123"
                                 @keyup.enter="joinSession()"
+                                x-init="setTimeout(() => $el.focus(), TIMING.FOCUS_DELAY)"
                                 class="input input-bordered w-full uppercase min-h-[48px]">
                         </div>
 
-                        <!-- Submit button -->
+                        <!-- Join button (shown after entering code) -->
                         <button
-                            @click="selectedAction === 'create' ? createSession() : joinSession()"
-                            class="btn w-full min-h-[48px]"
-                            :class="selectedAction === 'create' ? 'btn-primary' : 'btn-secondary'"
+                            x-show="selectedAction === 'join'"
+                            @click="joinSession()"
+                            class="btn btn-secondary w-full min-h-[48px]"
                             :disabled="isConnecting">
                             <span x-show="isConnecting" class="loading loading-ring loading-sm"></span>
-                            <span x-text="isConnecting ? (selectedAction === 'create' ? 'Creating…' : 'Joining…') : (selectedAction === 'create' ? 'Create Session' : 'Join Session')"></span>
+                            <span x-text="isConnecting ? 'Joining…' : 'Join Session'"></span>
                         </button>
                     </div>
                 </div>
@@ -192,7 +206,7 @@
 
                     <div class="divider"></div>
 
-                    <div x-show="participants.length === 1" class="alert alert-info mb-4">
+                    <div x-show="participants.length === 1" class="alert alert-info alert-soft mb-4">
                         <span>Waiting for people to join… ⏳</span>
                     </div>
 
@@ -223,7 +237,7 @@
                         </template>
                     </ul>
 
-                    <div x-show="!isHost && participants.length > 1" class="alert alert-info mt-4">
+                    <div x-show="!isHost && participants.length > 1" class="alert alert-info alert-soft mt-4">
                         <span class="loading loading-ring loading-sm"></span>
                         <span>Waiting for host to start the session…</span>
                     </div>
@@ -313,21 +327,21 @@
                 <div class="card-body">
                     <h2 class="card-title text-2xl">Time to share! ❣️</h2>
 
-                    <div x-show="!sessionComplete" class="mb-4">
+                    <div class="mb-4">
                         <div class="text-sm text-base-content/70 mb-1">Reading now</div>
                         <div class="text-lg font-bold flex items-center gap-2" :class="isMyTurn ? 'text-success' : 'text-primary'">
                             <span x-text="currentReader?.name"></span>
                             <span x-show="isMyTurn" class="badge badge-success badge-lg">Your turn</span>
                         </div>
                     </div>
-                    <div x-show="isMyTurn && !currentNote && !sessionComplete && notesRemaining > 0" class="alert alert-success mb-4">
+                    <div x-show="isMyTurn && !currentNote && notesRemaining > 0" class="alert alert-success alert-soft mb-4">
                         <div>
                             <p class="font-bold text-lg">It's your turn!</p>
                             <button @click="drawNote()" x-init="$watch('isMyTurn', value => { if(value) setTimeout(() => $el.focus(), TIMING.FOCUS_DELAY) })" class="btn btn-primary mt-2 min-h-[48px]">Pick a note</button>
                         </div>
                     </div>
 
-                    <div x-show="!isMyTurn && !sessionComplete" class="alert alert-info mb-4">
+                    <div x-show="!isMyTurn" class="alert alert-info alert-soft mb-4">
                         <div>
                             <p><strong x-text="currentReader?.name"></strong> is picking a note…</p>
                         </div>
@@ -344,13 +358,15 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div x-show="sessionComplete" class="space-y-4" x-init="$watch('sessionComplete', value => { if (value) { for(let i = 0; i < TIMING.EMOJI_ANIMATION_COUNT; i++) { setTimeout(() => { const emoji = document.createElement('div'); emoji.textContent = '🫶'; emoji.className = 'float-emoji'; emoji.style.left = Math.random() * 90 + 5 + '%'; emoji.style.bottom = '0'; document.body.appendChild(emoji); setTimeout(() => emoji.remove(), TIMING.EMOJI_ANIMATION_DURATION); }, i * TIMING.EMOJI_ANIMATION_INTERVAL); } } })">
-                        <div class="alert alert-success shadow-lg">
-                            <div class="text-center w-full">
-                                <h3 class="mt-3 text-lg">🫶 Here's what your team shared with you:</p>
-                            </div>
-                        </div>
+            <!-- Complete Phase -->
+            <div x-show="currentView === 'complete'" x-transition class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title text-2xl">🫶 Here's what your team shared with you</h2>
+
+                    <div class="space-y-4" x-init="$watch('currentView', value => { if (value === 'complete') { for(let i = 0; i < TIMING.EMOJI_ANIMATION_COUNT; i++) { setTimeout(() => { const emoji = document.createElement('div'); emoji.textContent = '🫶'; emoji.className = 'float-emoji'; emoji.style.left = Math.random() * 90 + 5 + '%'; emoji.style.bottom = '0'; document.body.appendChild(emoji); setTimeout(() => emoji.remove(), TIMING.EMOJI_ANIMATION_DURATION); }, i * TIMING.EMOJI_ANIMATION_INTERVAL); } } })">
 
                         <div class="space-y-2">
                             <template x-for="(note, index) in receivedNotes" :key="note.id">
@@ -462,7 +478,7 @@
                     </div>
                 </div>
 
-                <div class="alert alert-success mt-6">
+                <div class="alert alert-success alert-soft mt-6">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span><strong>Tip:</strong> Uplift works best when everyone is present and engaged. Find a quiet moment when your group can focus together.</span>
                 </div>
@@ -475,7 +491,7 @@
         <!-- Toast Notifications -->
         <div class="toast toast-top toast-center">
             <template x-for="notification in notifications" :key="notification.id">
-                <div class="alert" :class="notification.type === 'error' ? 'alert-error' : 'alert-success'">
+                <div class="alert alert-soft" :class="notification.type === 'error' ? 'alert-error' : 'alert-success'">
                     <span x-text="notification.message"></span>
                 </div>
             </template>

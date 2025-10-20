@@ -37,8 +37,8 @@ function uplift() {
     // ============================================================
     // STATE: VIEW & NAVIGATION
     // ============================================================
-    currentView: 'home', // home, create, join, lobby, writing, reading
-    onboardingStep: 'choice', // choice, name_entry
+    currentView: 'home', // home, create, join, lobby, writing, reading, complete
+    onboardingStep: 'name_entry', // name_entry, action_choice
     fromDirectLink: false,
 
     // ============================================================
@@ -73,7 +73,6 @@ function uplift() {
     notesRemaining: 0,
     totalNotes: 0,
     isMyTurn: false,
-    sessionComplete: false,
     animateNote: false,
 
     // ============================================================
@@ -117,7 +116,7 @@ function uplift() {
       if (codeFromURL) {
         this.joinCode = codeFromURL.toUpperCase();
         this.selectedAction = 'join';
-        this.onboardingStep = 'name_entry';
+        this.onboardingStep = 'name_entry'; // Still name_entry (now the first step)
         this.fromDirectLink = true;
         console.log('Pre-filled join code from URL:', this.joinCode);
       }
@@ -339,7 +338,8 @@ function uplift() {
           break;
 
         case 'session_complete':
-          this.sessionComplete = true;
+          this.currentView = 'complete';
+          this.currentNote = null; // Clear any displayed note
           // Filter notes to show only those received by this user
           if (message.data.notes) {
             this.receivedNotes = message.data.notes.filter(note => note.recipientId === this.myId);
@@ -358,7 +358,7 @@ function uplift() {
             if (this.fromDirectLink) {
               this.fromDirectLink = false;
               this.selectedAction = null;
-              this.onboardingStep = 'choice';
+              this.onboardingStep = 'name_entry';
             }
           }
           break;
@@ -398,7 +398,7 @@ function uplift() {
           break;
 
         case 'COMPLETE':
-          this.sessionComplete = true;
+          this.currentView = 'complete';
           this.announceToScreenReader('Session complete!');
           break;
       }
@@ -590,13 +590,20 @@ function uplift() {
 
     selectAction(action) {
       this.selectedAction = action;
-      this.onboardingStep = 'name_entry';
+      // No longer needed - action choice happens after name entry
     },
 
-    goBackToChoice() {
-      this.onboardingStep = 'choice';
+    proceedToActionChoice() {
+      if (!this.userName || !this.userName.trim()) {
+        this.showNotification('Please enter your name', 'error');
+        return;
+      }
+      this.onboardingStep = 'action_choice';
+    },
+
+    goBackToNameEntry() {
+      this.onboardingStep = 'name_entry';
       this.selectedAction = null;
-      this.userName = '';
       this.joinCode = '';
       this.fromDirectLink = false;
     },
@@ -618,9 +625,8 @@ function uplift() {
       this.currentReader = null;
       this.currentNote = null;
       this.notesRemaining = 0;
-      this.sessionComplete = false;
       this.receivedNotes = [];
-      this.onboardingStep = 'choice';
+      this.onboardingStep = 'name_entry';
       this.selectedAction = null;
       this.joinCode = '';
       this.fromDirectLink = false;
