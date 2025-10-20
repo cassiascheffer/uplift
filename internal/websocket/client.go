@@ -49,6 +49,9 @@ type Client struct {
 
 	// Last activity timestamp for inactivity timeout
 	lastActivity time.Time
+
+	// Channel to signal shutdown of inactivity checker
+	stopInactivityCheck chan struct{}
 }
 
 // Message represents a WebSocket message
@@ -63,6 +66,7 @@ type Message struct {
 // readPump pumps messages from the WebSocket connection to the hub
 func (c *Client) readPump() {
 	defer func() {
+		close(c.stopInactivityCheck)
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
@@ -80,26 +84,31 @@ func (c *Client) readPump() {
 	go func() {
 		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
-		for range ticker.C {
-			if time.Since(c.lastActivity) > inactivityTimeout {
-				log.Printf("Client inactive for %v, disconnecting: userId=%s session=%s", inactivityTimeout, c.userID, c.sessionID)
-				// Send timeout message before closing
-				timeoutMsg := &Message{
-					Type: "timeout",
-					Data: map[string]interface{}{
-						"message": "Disconnected due to inactivity. Please start again.",
-					},
-				}
-				c.SendMessage(timeoutMsg)
-				time.Sleep(100 * time.Millisecond) // Give time for message to send
-				// Close with policy violation code (1008) for timeout
-				c.conn.WriteControl(
-					websocket.CloseMessage,
-					websocket.FormatCloseMessage(1008, "Inactivity timeout"),
-					time.Now().Add(writeWait),
-				)
-				c.conn.Close()
+		for {
+			select {
+			case <-c.stopInactivityCheck:
 				return
+			case <-ticker.C:
+				if time.Since(c.lastActivity) > inactivityTimeout {
+					log.Printf("Client inactive for %v, disconnecting: userId=%s session=%s", inactivityTimeout, c.userID, c.sessionID)
+					// Send timeout message before closing
+					timeoutMsg := &Message{
+						Type: "timeout",
+						Data: map[string]interface{}{
+							"message": "Disconnected due to inactivity. Please start again.",
+						},
+					}
+					c.SendMessage(timeoutMsg)
+					time.Sleep(100 * time.Millisecond) // Give time for message to send
+					// Close with policy violation code (1008) for timeout
+					c.conn.WriteControl(
+						websocket.CloseMessage,
+						websocket.FormatCloseMessage(1008, "Inactivity timeout"),
+						time.Now().Add(writeWait),
+					)
+					c.conn.Close()
+					return
+				}
 			}
 		}
 	}()
@@ -179,6 +188,13 @@ func (c *Client) SendMessage(msg *Message) error {
 	if err != nil {
 		return err
 	}
+
+	// Recover from panic if channel is closed
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in SendMessage: %v", r)
+		}
+	}()
 
 	select {
 	case c.send <- data:

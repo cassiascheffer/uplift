@@ -41,9 +41,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		conn: conn,
-		send: make(chan []byte, 256),
-		hub:  h.hub,
+		conn:                conn,
+		send:                make(chan []byte, 256),
+		hub:                 h.hub,
+		stopInactivityCheck: make(chan struct{}),
 	}
 
 	// Don't register yet - wait until we know their sessionID
