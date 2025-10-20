@@ -1,21 +1,44 @@
 // ABOUTME: Alpine.js application logic for uplift frontend
 // ABOUTME: Manages client state, WebSocket communication, and UI interactions
 
+import { checkForDevMode } from './devMode.js';
+
+// Timing constants
+const TIMING = {
+  FOCUS_DELAY: 100,              // Delay before focusing input elements
+  PULSE_DURATION: 3000,          // Duration of pulse animation
+  NOTE_ANIMATION: 600,           // Duration of note reveal animation
+  NEW_BADGE_DURATION: 5000,      // How long to show "new" badge on participants
+  SR_ANNOUNCEMENT_CLEAR: 100,    // Delay before clearing screen reader announcements
+  NOTIFICATION_SUCCESS: 3000,    // Auto-dismiss time for success notifications
+  NOTIFICATION_ERROR: 4000,      // Auto-dismiss time for error notifications
+  MAX_RECONNECT_DELAY: 30000,    // Maximum delay for WebSocket reconnection (30s)
+  EMOJI_ANIMATION_INTERVAL: 200, // Interval between emoji animations
+  EMOJI_ANIMATION_COUNT: 8,      // Number of emojis to animate
+  EMOJI_ANIMATION_DURATION: 3000 // How long emoji animations last
+};
+
 function uplift() {
   return {
-    // Connection state
+    // ============================================================
+    // STATE: CONNECTION
+    // ============================================================
     ws: null,
     connected: false,
     isConnecting: false,
     reconnectAttempts: 0,
-    maxReconnectDelay: 30000, // 30 seconds max
+    maxReconnectDelay: TIMING.MAX_RECONNECT_DELAY,
 
-    // View state
+    // ============================================================
+    // STATE: VIEW & NAVIGATION
+    // ============================================================
     currentView: 'home', // home, create, join, lobby, writing, reading
     onboardingStep: 'choice', // choice, name_entry
     fromDirectLink: false,
 
-    // Session state
+    // ============================================================
+    // STATE: SESSION
+    // ============================================================
     sessionCode: '',
     isHost: false,
     myId: null,
@@ -23,155 +46,66 @@ function uplift() {
     joinCode: '',
     selectedAction: null, // 'create' or 'join'
 
-    // Participants
+    // ============================================================
+    // STATE: PARTICIPANTS
+    // ============================================================
     participants: [],
 
-    // Writing phase
+    // ============================================================
+    // STATE: WRITING PHASE
+    // ============================================================
     notes: {},
     notesWritten: 0,
     totalNotesNeeded: 0,
-    allNotesWritten: false,
     currentNoteIndex: 0, // Track which participant we're writing for
     hasSubmittedNotes: false, // Track if user has submitted
 
-    // Reading phase
+    // ============================================================
+    // STATE: READING PHASE
+    // ============================================================
     currentReader: null,
     currentNote: null,
     notesRemaining: 0,
     totalNotes: 0,
     isMyTurn: false,
-    shouldPulse: false,
     sessionComplete: false,
     animateNote: false,
 
-    // Completion
+    // ============================================================
+    // STATE: COMPLETION
+    // ============================================================
     receivedNotes: [],
 
-
-    // Notifications
+    // ============================================================
+    // STATE: UI & NOTIFICATIONS
+    // ============================================================
     notifications: [],
     recentlyJoinedIds: new Set(),
 
-    // Screen reader announcements
+    // ============================================================
+    // STATE: ACCESSIBILITY
+    // ============================================================
     srAnnouncement: '',
 
-    // Host controls
+    // ============================================================
+    // STATE: HOST CONTROLS
+    // ============================================================
     participantToRemove: null,
 
+    // ============================================================
+    // LIFECYCLE
+    // ============================================================
     init() {
       console.log('Uplift initialized');
       this.loadTheme();
       this.setupBeforeUnload();
-      this.checkForDevMode();
+      checkForDevMode(this);
       this.checkForSessionCodeInURL();
     },
 
-    checkForDevMode() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const devMode = urlParams.get('dev');
-
-      if (devMode === 'true') {
-        const phase = urlParams.get('phase') || 'lobby';
-        const participantCount = parseInt(urlParams.get('participants') || '3');
-
-        console.log(`[DEV MODE] Initializing ${phase} phase with ${participantCount} participants`);
-        this.initDevSession(phase, participantCount);
-      }
-    },
-
-    initDevSession(phase, participantCount) {
-      // Generate fake participants
-      this.participants = this.generateFakeParticipants(participantCount);
-      this.myId = this.participants[0].id;
-      this.userName = this.participants[0].name;
-      this.sessionCode = 'DEV123';
-      this.isHost = true;
-      this.connected = true; // Fake connection
-
-      // Initialize phase-specific state
-      switch (phase) {
-        case 'lobby':
-          this.currentView = 'lobby';
-          break;
-
-        case 'writing':
-          this.currentView = 'writing';
-          this.totalNotesNeeded = this.participants.length - 1;
-          this.currentNoteIndex = 0;
-          this.hasSubmittedNotes = false;
-          this.updateNotesProgress();
-          break;
-
-        case 'reading':
-          this.currentView = 'reading';
-          this.currentReader = this.participants[0];
-          this.isMyTurn = true;
-          const totalNotesCount = participantCount * (participantCount - 1);
-          this.totalNotes = totalNotesCount;
-          this.notesRemaining = totalNotesCount;
-          // Generate some fake notes for testing
-          this.generateFakeNotes();
-          break;
-
-        case 'complete':
-          this.currentView = 'reading';
-          this.sessionComplete = true;
-          this.generateFakeReceivedNotes();
-          break;
-
-        default:
-          console.warn(`[DEV MODE] Unknown phase: ${phase}`);
-          this.currentView = 'lobby';
-      }
-    },
-
-    generateFakeParticipants(count) {
-      const names = ['Winter', 'Willow', 'Spring', 'Salix', 'Summer', 'Rose', 'Aster'];
-      const participants = [];
-
-      for (let i = 0; i < Math.min(count, names.length); i++) {
-        participants.push({
-          id: `dev-user-${i}`,
-          name: names[i],
-          isHost: i === 0
-        });
-      }
-
-      return participants;
-    },
-
-    generateFakeNotes() {
-      // Generate fake notes for the reading phase
-      const fakeNoteContents = [
-        "I really appreciate your positive attitude and how you always bring energy to the team!",
-        "Thank you for being such a great listener and always making time for others.",
-        "Your attention to detail and thoroughness in your work is truly admirable.",
-        "I'm grateful for your willingness to help others and share your knowledge.",
-        "Your creative problem-solving skills have helped us overcome many challenges."
-      ];
-
-      this.currentNote = {
-        id: 'dev-note-1',
-        recipient: this.participants[0].name,
-        recipientId: this.participants[0].id,
-        content: fakeNoteContents[0]
-      };
-    },
-
-    generateFakeReceivedNotes() {
-      const fakeNoteContents = [
-        "I really appreciate your positive attitude and how you always bring energy to the team!",
-        "Thank you for being such a great listener and always making time for others.",
-        "Your attention to detail and thoroughness in your work is truly admirable."
-      ];
-
-      this.receivedNotes = fakeNoteContents.map((content, index) => ({
-        id: `dev-received-${index}`,
-        recipientId: this.myId,
-        content: content
-      }));
-    },
-
+    // ============================================================
+    // URL & NAVIGATION
+    // ============================================================
     checkForSessionCodeInURL() {
       const urlParams = new URLSearchParams(window.location.search);
       const codeFromURL = urlParams.get('code');
@@ -200,6 +134,9 @@ function uplift() {
       });
     },
 
+    // ============================================================
+    // THEME
+    // ============================================================
     loadTheme() {
       // Detect system preference for dark mode
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -213,6 +150,9 @@ function uplift() {
       });
     },
 
+    // ============================================================
+    // WEBSOCKET CONNECTION
+    // ============================================================
     connectWebSocket(onConnected) {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -270,6 +210,9 @@ function uplift() {
       };
     },
 
+    // ============================================================
+    // MESSAGE HANDLING
+    // ============================================================
     handleMessage(message) {
       console.log('Received message:', message);
 
@@ -298,10 +241,10 @@ function uplift() {
             if (newParticipant && newParticipant.id !== this.myId) {
               this.showNotification(`${newParticipant.name} arrived!`);
               this.recentlyJoinedIds.add(newParticipant.id);
-              // Remove 'new' indicator after 5 seconds
+              // Remove 'new' indicator after a delay
               setTimeout(() => {
                 this.recentlyJoinedIds.delete(newParticipant.id);
-              }, 5000);
+              }, TIMING.NEW_BADGE_DURATION);
             }
           }
           this.participants = newParticipants;
@@ -371,8 +314,6 @@ function uplift() {
             this.totalNotes = message.data.total;
           }
           if (this.isMyTurn) {
-            this.shouldPulse = true;
-            setTimeout(() => { this.shouldPulse = false; }, 3000);
             this.announceToScreenReader("It's your turn to pick a note");
           } else {
             this.announceToScreenReader(`${this.currentReader.name} is now reading`);
@@ -388,7 +329,7 @@ function uplift() {
           }
           // Trigger animation
           this.animateNote = true;
-          setTimeout(() => { this.animateNote = false; }, 600);
+          setTimeout(() => { this.animateNote = false; }, TIMING.NOTE_ANIMATION);
           this.announceToScreenReader(`Note picked for ${this.currentNote.recipient}`);
           break;
 
@@ -437,10 +378,6 @@ function uplift() {
           if (data.currentReader) {
             this.currentReader = data.currentReader;
             this.isMyTurn = data.currentReader.id === this.myId;
-            if (this.isMyTurn) {
-              this.shouldPulse = true;
-              setTimeout(() => { this.shouldPulse = false; }, 3000);
-            }
             console.log('Reading phase: currentReader=', this.currentReader, 'isMyTurn=', this.isMyTurn);
           }
           // Calculate total notes: each participant writes to everyone else
@@ -472,6 +409,9 @@ function uplift() {
       this.notesWritten = count;
     },
 
+    // ============================================================
+    // SESSION ACTIONS
+    // ============================================================
     send(message) {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         console.log('Sending message:', message);
@@ -708,6 +648,9 @@ function uplift() {
       document.getElementById('remove_participant_modal').close();
     },
 
+    // ============================================================
+    // UI HELPERS
+    // ============================================================
     getInitials(name) {
       if (!name) return '?';
       const parts = name.trim().split(/\s+/);
@@ -743,8 +686,7 @@ function uplift() {
     showNotification(message, type = 'success') {
       const id = Date.now();
       this.notifications.push({ id, message, type });
-      // Auto-dismiss after 4 seconds for errors, 3 for success
-      const timeout = type === 'error' ? 4000 : 3000;
+      const timeout = type === 'error' ? TIMING.NOTIFICATION_ERROR : TIMING.NOTIFICATION_SUCCESS;
       setTimeout(() => {
         this.notifications = this.notifications.filter(n => n.id !== id);
       }, timeout);
@@ -753,9 +695,12 @@ function uplift() {
     announceToScreenReader(message) {
       this.srAnnouncement = message;
       // Clear after brief moment so same message can be announced again
-      setTimeout(() => { this.srAnnouncement = ''; }, 100);
+      setTimeout(() => { this.srAnnouncement = ''; }, TIMING.SR_ANNOUNCEMENT_CLEAR);
     },
 
+    // ============================================================
+    // EXPORT & SHARING
+    // ============================================================
     async copySessionCode() {
       try {
         await navigator.clipboard.writeText(this.sessionCode);
