@@ -21,6 +21,11 @@ const TIMING = {
 function uplift() {
   return {
     // ============================================================
+    // CONSTANTS
+    // ============================================================
+    TIMING: TIMING,
+
+    // ============================================================
     // STATE: CONNECTION
     // ============================================================
     ws: null,
@@ -660,27 +665,52 @@ function uplift() {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     },
 
-    getAvatarColor(name) {
-      // Generate consistent color based on name
-      const colors = [
-        'bg-primary text-primary-content',
-        'bg-secondary text-secondary-content',
-        'bg-accent text-accent-content',
-        'bg-info text-info-content',
-        'bg-success text-success-content',
-        'bg-warning text-warning-content',
-      ];
-
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      return colors[Math.abs(hash) % colors.length];
+    getCurrentTheme() {
+      // Get current theme from data-theme attribute
+      return document.documentElement.getAttribute('data-theme') || 'latte';
     },
 
-    getCardColor(name) {
-      // Use same color assignment as avatar for consistency
-      return this.getAvatarColor(name);
+    getParticipantIndex(participantId) {
+      // Find the index of a participant in the participants array
+      return this.participants.findIndex(p => p.id === participantId);
+    },
+
+    getCatppuccinColorByIndex(index) {
+      // Vibrant Catppuccin accent colours - cycle through them
+      const colorNames = ['pink', 'mauve', 'blue', 'teal', 'green', 'peach'];
+      const colorName = colorNames[index % colorNames.length];
+      const theme = this.getCurrentTheme();
+
+      return {
+        colorName,
+        bgVar: `--ctp-${theme}-${colorName}`,
+        textVar: `--ctp-${theme}-crust`,
+      };
+    },
+
+    getAvatarColorByParticipant(participant) {
+      // Get colour based on participant's position in the list
+      const index = this.participants.findIndex(p => p.id === participant.id);
+      const color = this.getCatppuccinColorByIndex(index);
+      return `background-color: var(${color.bgVar}); color: var(${color.textVar});`;
+    },
+
+    getCardColorByName(recipientName) {
+      // Find participant by name and use their colour
+      const participant = this.participants.find(p => p.name === recipientName);
+      if (!participant) return '';
+      const index = this.participants.findIndex(p => p.id === participant.id);
+      const color = this.getCatppuccinColorByIndex(index);
+      return `background-color: var(${color.bgVar}); color: var(${color.textVar});`;
+    },
+
+    getChatBubbleColor(index) {
+      // Cycle through vibrant Catppuccin colours for chat bubbles
+      const colorNames = ['pink', 'mauve', 'blue', 'teal', 'green', 'peach'];
+      const colorName = colorNames[index % colorNames.length];
+      const theme = this.getCurrentTheme();
+
+      return `background-color: var(--ctp-${theme}-${colorName}); color: var(--ctp-${theme}-crust);`;
     },
 
     showNotification(message, type = 'success') {

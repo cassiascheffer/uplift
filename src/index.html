@@ -96,6 +96,15 @@
                         <!-- Title based on action -->
                         <h3 class="text-lg font-bold mb-4" x-text="selectedAction === 'create' ? 'Create a new session' : 'Join a session'"></h3>
 
+                        <!-- Code display (when from direct link) -->
+                        <div x-show="selectedAction === 'join' && fromDirectLink" class="alert alert-info alert-soft mb-4">
+                            <div>
+                              <p class="font-semibold">
+                                Joining session: <span class="font-mono" x-text="joinCode"></span>
+                              </p>
+                            </div>
+                        </div>
+
                         <!-- Name field -->
                         <div class="form-control mb-4">
                             <label class="label">
@@ -147,14 +156,6 @@
                                 class="input input-bordered w-full uppercase min-h-[48px]">
                         </div>
 
-                        <!-- Code display (when from direct link) -->
-                        <div x-show="selectedAction === 'join' && fromDirectLink" class="alert alert-info mb-4">
-                            <div>
-                                <p class="font-semibold">Joining session:</p>
-                                <p class="font-mono text-lg" x-text="joinCode"></p>
-                            </div>
-                        </div>
-
                         <!-- Submit button -->
                         <button
                             @click="selectedAction === 'create' ? createSession() : joinSession()"
@@ -200,7 +201,7 @@
                         <template x-for="participant in participants" :key="participant.id">
                             <li class="flex items-center gap-3 p-2 bg-base-200 rounded-lg">
                                 <div class="avatar avatar-placeholder">
-                                    <div class="w-10 rounded-full" :class="getAvatarColor(participant.name)">
+                                    <div class="w-10 rounded-full" :style="getAvatarColorByParticipant(participant)">
                                         <span class="text-sm" x-text="getInitials(participant.name)"></span>
                                     </div>
                                 </div>
@@ -255,7 +256,7 @@
 
                         <!-- Current note card -->
                         <div class="mb-6 flex justify-center" x-show="getCurrentRecipient()">
-                            <div class="card text-center w-full max-w-2xl" :class="getCurrentRecipient() ? getCardColor(getCurrentRecipient().name) : ''">
+                            <div class="card text-center w-full max-w-2xl" :style="getCurrentRecipient() ? getCardColorByName(getCurrentRecipient().name) : ''">
                                 <div class="card-body">
                                     <p class="text-sm font-medium mb-2">Write a note of appreciation for:</p>
                                     <p class="text-4xl font-bold mb-2" x-text="getCurrentRecipient()?.name"></p>
@@ -332,7 +333,7 @@
                         </div>
                     </div>
 
-                    <div x-show="currentNote" class="card shadow-lg mb-4" :class="[animateNote ? 'note-reveal-animation' : '', currentNote ? getAvatarColor(currentNote.recipient) : '']">
+                    <div x-show="currentNote" class="card shadow-lg mb-4" :class="animateNote ? 'note-reveal-animation' : ''" :style="currentNote ? getCardColorByName(currentNote.recipient) : ''">
                         <div class="card-body">
                             <p class="text-sm opacity-70">For: <span class="font-semibold" x-text="currentNote?.recipient"></span></p>
                             <p class="text-lg leading-relaxed mt-2" x-text="currentNote?.content"></p>
@@ -351,11 +352,11 @@
                             </div>
                         </div>
 
-                        <div class="space-y-3">
-                            <template x-for="note in receivedNotes" :key="note.id">
-                                <div class="card bg-base-100 shadow">
-                                    <div class="card-body">
-                                        <p class="text-base leading-relaxed" x-text="note.content"></p>
+                        <div class="space-y-2">
+                            <template x-for="(note, index) in receivedNotes" :key="note.id">
+                                <div class="chat chat-start">
+                                    <div class="chat-bubble text-lg" :style="getChatBubbleColor(index)">
+                                        <p class="leading-relaxed" x-text="note.content"></p>
                                     </div>
                                 </div>
                             </template>

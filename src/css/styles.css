@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@catppuccin/palette/css/catppuccin.css";
 @plugin "daisyui";
 @plugin "./catppuccin.latte.js";
 @plugin "./catppuccin.frappe.js";
