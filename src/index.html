@@ -32,23 +32,37 @@
     </a>
 
     <div x-data="uplift()" class="container mx-auto px-4 py-8 max-w-4xl">
-        <header class="text-center mb-8">
-            <div class="flex justify-between items-center">
-                <div class="flex-1">
-                    <button x-show="sessionCode && currentView !== 'home'" @click="document.getElementById('leave_modal').showModal()" class="btn btn-soft btn-accent btn-sm lg:btn-xs">Leave Session</button>
+        <header class="mb-8">
+            <!-- Hero card with background image - shown across all screens -->
+            <div class="card bg-base-100 image-full shadow-xl overflow-hidden h-[150px] sm:h-[180px] md:h-[200px] mb-6">
+                <figure>
+                    <img src="/kind-and-curious-ZDUXvlyU_iI-unsplash-og.jpg" alt="Colourful bubbles floating" class="object-cover w-full h-full">
+                </figure>
+                <div class="card-body flex flex-row items-center justify-between p-4 sm:p-6">
+                    <div class="w-[100px]" x-show="sessionCode && currentView !== 'home'"></div>
+                    <h1
+                        class="card-title text-3xl sm:text-4xl md:text-5xl font-bold text-white flex-1 text-center cursor-pointer hover:opacity-80 transition-opacity"
+                        @click="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
+                        role="button"
+                        :aria-label="sessionCode && currentView !== 'home' ? 'Leave session and return home' : 'Uplift home'"
+                        tabindex="0"
+                        @keydown.enter="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
+                        @keydown.space.prevent="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null">
+                        🎈Uplift
+                    </h1>
+                    <button
+                        x-show="sessionCode && currentView !== 'home'"
+                        @click="document.getElementById('leave_modal').showModal()"
+                        class="btn btn-ghost btn-sm text-white/70 hover:text-white/90">
+                        Leave Session
+                    </button>
                 </div>
-                <h1
-                    class="text-4xl font-bold text-primary flex-1 cursor-pointer hover:opacity-80 transition-opacity text-center"
-                    @click="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
-                    role="button"
-                    :aria-label="sessionCode && currentView !== 'home' ? 'Leave session and return home' : 'Uplift home'"
-                    tabindex="0"
-                    @keydown.enter="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
-                    @keydown.space.prevent="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null">
-                    Uplift
-                </h1>
-                <div class="flex-1"></div>
             </div>
+
+            <!-- Tagline - only shown on home screen -->
+            <p x-show="currentView === 'home'" x-transition class="text-center text-base sm:text-lg text-base-content/70 max-w-2xl mx-auto">
+                Uplift your peers and celebrate their work. Write heartfelt notes to each other, then take turns picking an unread note and reading it to your team.
+            </p>
         </header>
 
         <main id="main-content">
@@ -66,17 +80,6 @@
 
             <!-- Home/Welcome Screen -->
             <div x-show="currentView === 'home'" x-transition class="space-y-6">
-                <!-- Hero section with background image -->
-                <div class="card bg-base-100 image-full shadow-xl overflow-hidden h-[200px] sm:h-[250px]">
-                    <figure>
-                        <img src="/kind-and-curious-ZDUXvlyU_iI-unsplash-og.jpg" alt="Colourful bubbles floating" class="object-cover w-full h-full">
-                    </figure>
-                    <div class="card-body text-white">
-                        <h2 class="card-title text-2xl sm:text-3xl font-bold text-white">🎈Uplift</h2>
-                        <p class="text-base sm:text-lg text-white">Uplift is a way to uplift your peers and celebrate their work. Write heartfelt notes to each other, then take turns picking an unread note and reading it to your team.</p>
-                    </div>
-                </div>
-
                 <!-- Get Started section -->
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body">
