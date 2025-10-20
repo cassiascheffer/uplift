@@ -334,12 +334,14 @@
                         <div class="card-body">
                             <p class="text-sm opacity-70">For: <span class="font-semibold" x-text="currentNote?.recipient"></span></p>
                             <p class="text-lg leading-relaxed mt-2" x-text="currentNote?.content"></p>
-                            <div class="card-actions justify-end mt-4" x-show="isMyTurn">
-                                <button @click="markNoteRead()" class="btn btn-primary min-h-[48px]">
-                                    Done Reading
-                                </button>
-                            </div>
                         </div>
+                    </div>
+
+                    <!-- Done reading button -->
+                    <div x-show="isMyTurn && currentNote" class="flex justify-end">
+                        <button @click="markNoteRead()" class="btn btn-primary min-h-[48px]">
+                            Done Reading
+                        </button>
                     </div>
                 </div>
             </div>
@@ -479,6 +481,11 @@
                 </div>
             </template>
         </div>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 mt-8 text-base-content/50 text-sm">
+            <p>Made by <a href="https://enumerator.dev" target="_blank" rel="noopener noreferrer" class="link link-hover">Cassia</a> | <a href="https://ko-fi.com/cassiascheffer" target="_blank" rel="noopener noreferrer" class="link link-hover">Support my work on Ko-fi</a></p>
+        </footer>
     </div>
 </body>
 </html>
