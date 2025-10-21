@@ -4,6 +4,7 @@ package websocket
 
 import (
 	"log"
+	"sync"
 )
 
 // ClientMessage wraps a message with its client
@@ -16,6 +17,9 @@ type ClientMessage struct {
 type Hub struct {
 	// Registered clients (sessionID -> map of clients)
 	clients map[string]map[*Client]bool
+
+	// Mutex to protect clients map
+	clientsMu sync.RWMutex
 
 	// Inbound messages from clients
 	process chan *ClientMessage
@@ -49,15 +53,18 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
+			h.clientsMu.Lock()
 			sessionClients, exists := h.clients[client.sessionID]
 			if !exists {
 				sessionClients = make(map[*Client]bool)
 				h.clients[client.sessionID] = sessionClients
 			}
 			sessionClients[client] = true
+			h.clientsMu.Unlock()
 			log.Printf("Client registered: userId=%s session=%s", client.userID, client.sessionID)
 
 		case client := <-h.unregister:
+			h.clientsMu.Lock()
 			if sessionClients, ok := h.clients[client.sessionID]; ok {
 				if _, ok := sessionClients[client]; ok {
 					delete(sessionClients, client)
@@ -75,6 +82,7 @@ func (h *Hub) Run() {
 					}
 				}
 			}
+			h.clientsMu.Unlock()
 
 		case clientMsg := <-h.process:
 			// Handle message with the registered handler
@@ -87,47 +95,76 @@ func (h *Hub) Run() {
 
 // BroadcastToSession sends a message to all clients in a session
 func (h *Hub) BroadcastToSession(sessionID string, message *Message) {
+	h.clientsMu.RLock()
 	sessionClients, ok := h.clients[sessionID]
 	if !ok {
+		h.clientsMu.RUnlock()
 		return
 	}
 
+	// Copy client pointers to avoid holding lock during send
+	clients := make([]*Client, 0, len(sessionClients))
 	for client := range sessionClients {
+		clients = append(clients, client)
+	}
+	h.clientsMu.RUnlock()
+
+	for _, client := range clients {
 		client.SendMessage(message)
 	}
 }
 
 // BroadcastToSessionExcept sends a message to all clients except one
 func (h *Hub) BroadcastToSessionExcept(sessionID string, exceptUserID string, message *Message) {
+	h.clientsMu.RLock()
 	sessionClients, ok := h.clients[sessionID]
 	if !ok {
+		h.clientsMu.RUnlock()
 		return
 	}
 
+	// Copy client pointers to avoid holding lock during send
+	clients := make([]*Client, 0, len(sessionClients))
 	for client := range sessionClients {
 		if client.userID != exceptUserID {
-			client.SendMessage(message)
+			clients = append(clients, client)
 		}
+	}
+	h.clientsMu.RUnlock()
+
+	for _, client := range clients {
+		client.SendMessage(message)
 	}
 }
 
 // SendToUser sends a message to a specific user in a session
 func (h *Hub) SendToUser(sessionID string, userID string, message *Message) {
+	h.clientsMu.RLock()
 	sessionClients, ok := h.clients[sessionID]
 	if !ok {
+		h.clientsMu.RUnlock()
 		return
 	}
 
+	var targetClient *Client
 	for client := range sessionClients {
 		if client.userID == userID {
-			client.SendMessage(message)
-			return
+			targetClient = client
+			break
 		}
+	}
+	h.clientsMu.RUnlock()
+
+	if targetClient != nil {
+		targetClient.SendMessage(message)
 	}
 }
 
 // GetSessionClientCount returns the number of connected clients for a session
 func (h *Hub) GetSessionClientCount(sessionID string) int {
+	h.clientsMu.RLock()
+	defer h.clientsMu.RUnlock()
+
 	sessionClients, ok := h.clients[sessionID]
 	if !ok {
 		return 0
