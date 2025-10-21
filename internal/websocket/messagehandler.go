@@ -157,8 +157,15 @@ func (mh *MessageHandler) handleCreateSession(client *Client, msg *Message) {
 		userName = "Host"
 	}
 
+	// Validate and sanitise user name
+	validatedName, err := validateUserName(userName)
+	if err != nil {
+		mh.sendError(client, err.Error())
+		return
+	}
+
 	// Create session
-	sess := mh.sessionManager.CreateSession(userName)
+	sess := mh.sessionManager.CreateSession(validatedName)
 
 	// Get the host participant (first and only participant)
 	participants := sess.GetParticipantList()
@@ -210,6 +217,13 @@ func (mh *MessageHandler) handleJoinSession(client *Client, msg *Message) {
 		return
 	}
 
+	// Validate and sanitise user name
+	validatedName, err := validateUserName(userName)
+	if err != nil {
+		mh.sendError(client, err.Error())
+		return
+	}
+
 	// Get session by code
 	sess, err := mh.sessionManager.GetSessionByCode(sessionCode)
 	if err != nil {
@@ -217,8 +231,14 @@ func (mh *MessageHandler) handleJoinSession(client *Client, msg *Message) {
 		return
 	}
 
+	// Check participant limit
+	if err := checkParticipantLimit(len(sess.Participants)); err != nil {
+		mh.sendError(client, err.Error())
+		return
+	}
+
 	// Add participant to session
-	participant, err := sess.AddParticipant(userName)
+	participant, err := sess.AddParticipant(validatedName)
 	if err != nil {
 		mh.sendError(client, err.Error())
 		return
@@ -333,7 +353,15 @@ func (mh *MessageHandler) handleSubmitNotes(client *Client, msg *Message) {
 			continue
 		}
 
-		if err := sess.AddNote(client.userID, recipientID, content); err != nil {
+		// Validate and sanitise note content
+		validatedContent, err := validateNoteContent(content)
+		if err != nil {
+			log.Printf("note validation error: %v", err)
+			mh.sendError(client, err.Error())
+			return
+		}
+
+		if err := sess.AddNote(client.userID, recipientID, validatedContent); err != nil {
 			log.Printf("error adding note: %v", err)
 			mh.sendError(client, err.Error())
 			return
