@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,9 @@ func main() {
 
 	// Create session manager
 	sessionManager := session.NewManager()
+
+	// Start session cleanup routine in background
+	go sessionManager.StartCleanupRoutine(context.Background())
 
 	// Create WebSocket hub
 	hub := websocket.NewHub(nil)

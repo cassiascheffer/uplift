@@ -3,10 +3,12 @@
 package session
 
 import (
+	"context"
 	"errors"
 	"log"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Manager manages all active sessions in memory
@@ -107,4 +109,65 @@ func (m *Manager) GetAllSessions() []*Session {
 	}
 
 	return sessions
+}
+
+// StartCleanupRoutine starts a background goroutine that periodically cleans up old sessions
+func (m *Manager) StartCleanupRoutine(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	log.Printf("Session cleanup routine started (runs every 5 minutes)")
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Printf("Session cleanup routine stopped")
+			return
+		case <-ticker.C:
+			m.cleanupSessions()
+		}
+	}
+}
+
+// cleanupSessions removes old completed sessions and abandoned sessions
+func (m *Manager) cleanupSessions() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	now := time.Now()
+	completedThreshold := now.Add(-1 * time.Hour)
+	cleanedCount := 0
+
+	for sessionID, session := range m.sessions {
+		session.mu.RLock()
+		shouldRemove := false
+		reason := ""
+
+		// Remove abandoned sessions (no participants)
+		if len(session.Participants) == 0 {
+			shouldRemove = true
+			reason = "abandoned (no participants)"
+		} else if session.Phase == PhaseComplete && session.CompletedAt != nil {
+			// Remove completed sessions older than 1 hour
+			if session.CompletedAt.Before(completedThreshold) {
+				shouldRemove = true
+				reason = "completed over 1 hour ago"
+			}
+		}
+
+		sessionCode := session.Code
+		session.mu.RUnlock()
+
+		if shouldRemove {
+			delete(m.sessions, sessionID)
+			normalizedCode := strings.ToUpper(strings.TrimSpace(sessionCode))
+			delete(m.sessionsByCode, normalizedCode)
+			cleanedCount++
+			log.Printf("Cleaned up session: id=%s code=%s reason=%s", sessionID, sessionCode, reason)
+		}
+	}
+
+	if cleanedCount > 0 {
+		log.Printf("Session cleanup complete: removed=%d remaining=%d", cleanedCount, len(m.sessions))
+	}
 }

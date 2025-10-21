@@ -47,6 +47,7 @@ type Session struct {
 	Participants map[string]*Participant `json:"participants"`
 	Notes        []*Note                 `json:"notes"`
 	CreatedAt    time.Time               `json:"createdAt"`
+	CompletedAt  *time.Time              `json:"completedAt,omitempty"`
 	HostID       string                  `json:"hostId"`
 	CurrentTurn  int                     `json:"currentTurn"` // Index of current reader
 	mu           sync.RWMutex
@@ -303,12 +304,15 @@ func (s *Session) AdvanceTurn() {
 		}
 	}
 
+	now := time.Now()
 	if allRead {
 		s.Phase = PhaseComplete
+		s.CompletedAt = &now
 	} else {
 		// Deadlock scenario: unread notes exist but nobody can read them
 		// This shouldn't happen with proper note filtering, but handle gracefully
 		s.Phase = PhaseComplete
+		s.CompletedAt = &now
 	}
 }
 
