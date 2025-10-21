@@ -367,7 +367,9 @@ func (s *Session) getParticipantsSorted() []*Participant {
 // generateSessionCode generates a short, memorable session code
 func generateSessionCode() string {
 	b := make([]byte, 4)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		panic("crypto/rand failed: " + err.Error())
+	}
 	code := base32.StdEncoding.EncodeToString(b)
 	// Remove padding and limit to 6 characters
 	code = strings.TrimRight(code, "=")
@@ -380,6 +382,8 @@ func generateSessionCode() string {
 // generateID generates a unique identifier
 func generateID() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		panic("crypto/rand failed: " + err.Error())
+	}
 	return base32.StdEncoding.EncodeToString(b)
 }

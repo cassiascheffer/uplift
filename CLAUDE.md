@@ -75,6 +75,45 @@ cp -r dist/* static/
 
 Set `PORT` environment variable to override default port 8080.
 
+### Issue Tracking (Beads)
+
+This project uses `bd` (beads), a git-backed issue tracker designed for AI agents. Beads provides dependency tracking and ready-work detection across sessions.
+
+**Finding Work:**
+```bash
+bd ready          # Show issues with no open blockers (start here)
+bd blocked        # Show blocked issues
+bd stats          # View project statistics
+```
+
+**Managing Issues:**
+```bash
+bd create "Title" -d "Description" -p 1 -t bug
+bd list [--status open] [--priority 1]
+bd show <issue-id>
+bd update <id> --status in_progress
+bd close <id> --reason "Completed"
+```
+
+**Dependencies:**
+```bash
+bd dep add <from> <to>                         # Create blocking dependency
+bd dep add <from> <to> --type discovered-from  # Link work discovered during task
+bd dep tree <issue-id>                         # Visualise dependencies
+```
+
+**Dependency Types:**
+- `blocks` - Hard blocker (default, affects ready-work detection)
+- `discovered-from` - Links new work discovered during execution
+- `related` - Soft connection without blocking
+- `parent-child` - Epic/subtask hierarchies
+
+**Key Notes:**
+- Use `--json` flag on any command for programmatic parsing
+- JSONL files are committed to git; changes auto-export with 5-second debounce
+- Currently recommended for single-workstream projects only (v0.9.x has multi-workstream bugs)
+- Link discovered issues back to parent work using `discovered-from` dependencies
+
 ## Architecture
 
 ### Backend (Go)
