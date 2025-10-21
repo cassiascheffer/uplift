@@ -5,6 +5,7 @@ package websocket
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -52,6 +53,15 @@ type Client struct {
 
 	// Channel to signal shutdown of inactivity checker
 	stopInactivityCheck chan struct{}
+
+	// Ensures send channel is only closed once
+	closeOnce sync.Once
+
+	// Tracks if send channel has been closed
+	sendClosed bool
+
+	// Protects sendClosed flag
+	sendMu sync.RWMutex
 }
 
 // Message represents a WebSocket message
@@ -189,19 +199,30 @@ func (c *Client) SendMessage(msg *Message) error {
 		return err
 	}
 
-	// Recover from panic if channel is closed
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("Recovered from panic in SendMessage: %v", r)
-		}
-	}()
+	// Check if send channel is closed
+	c.sendMu.RLock()
+	if c.sendClosed {
+		c.sendMu.RUnlock()
+		return nil
+	}
+	c.sendMu.RUnlock()
 
 	select {
 	case c.send <- data:
 		return nil
 	default:
 		// Client's send buffer is full, close connection
-		close(c.send)
+		c.closeSendChannel()
 		return nil
 	}
+}
+
+// closeSendChannel safely closes the send channel exactly once
+func (c *Client) closeSendChannel() {
+	c.closeOnce.Do(func() {
+		c.sendMu.Lock()
+		c.sendClosed = true
+		c.sendMu.Unlock()
+		close(c.send)
+	})
 }
