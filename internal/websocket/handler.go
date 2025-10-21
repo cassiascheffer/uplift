@@ -5,6 +5,8 @@ package websocket
 import (
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,11 +15,32 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:    4096,
 	WriteBufferSize:   4096,
 	EnableCompression: true,
-	CheckOrigin: func(r *http.Request) bool {
-		// Allow all origins for development
-		// In production, implement proper origin checking
+	CheckOrigin:       checkOrigin,
+}
+
+// checkOrigin validates the Origin header to prevent CSWSH attacks
+func checkOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+
+	// Allow localhost for development (with any port)
+	if strings.HasPrefix(origin, "http://localhost:") ||
+		strings.HasPrefix(origin, "https://localhost:") ||
+		origin == "http://localhost" ||
+		origin == "https://localhost" {
 		return true
-	},
+	}
+
+	// Allow production domain from environment variable
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
+	if allowedOrigin != "" && origin == allowedOrigin {
+		return true
+	}
+
+	log.Printf("Rejected WebSocket connection from origin: %s", origin)
+	return false
 }
 
 // Handler handles WebSocket upgrade requests
