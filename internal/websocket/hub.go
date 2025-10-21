@@ -68,7 +68,7 @@ func (h *Hub) Run() {
 			if sessionClients, ok := h.clients[client.sessionID]; ok {
 				if _, ok := sessionClients[client]; ok {
 					delete(sessionClients, client)
-					close(client.send)
+					client.closeSendChannel()
 					log.Printf("Client unregistered: userId=%s session=%s", client.userID, client.sessionID)
 
 					// Call disconnect handler if registered
