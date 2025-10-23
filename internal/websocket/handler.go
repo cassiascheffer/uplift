@@ -39,7 +39,19 @@ func checkOrigin(r *http.Request) bool {
 		return true
 	}
 
-	log.Printf("Rejected WebSocket connection from origin: %s", origin)
+	// Allow same-origin requests by comparing Origin with Host
+	// This handles production deployments without requiring ALLOWED_ORIGIN
+	host := r.Host
+	scheme := "https"
+	if r.TLS == nil {
+		scheme = "http"
+	}
+	expectedOrigin := scheme + "://" + host
+	if origin == expectedOrigin {
+		return true
+	}
+
+	log.Printf("Rejected WebSocket connection from origin: %s (expected: %s)", origin, expectedOrigin)
 	return false
 }
 
