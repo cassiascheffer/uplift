@@ -179,12 +179,46 @@
                             <span x-show="isConnecting" class="loading loading-ring loading-sm"></span>
                             <span x-text="isConnecting ? 'Joining…' : 'Join Session'"></span>
                         </button>
+                    </div>
 
-                        <!-- Learn more section -->
-                        <div class="text-center mt-6">
-                            <button @click="document.getElementById('how_it_works_modal').showModal()" class="link link-primary text-sm">
-                                How does it work?
-                            </button>
+                    <!-- How it Works (shown for both flows) -->
+                    <div class="mt-8">
+                        <h3 class="font-bold text-2xl mb-4">How Uplift Works</h3>
+
+                        <ul class="list bg-base-100 rounded-box shadow-md" x-data="{ getStepColor(index) { const theme = document.documentElement.getAttribute('data-theme') || 'latte'; const colors = ['pink', 'mauve', 'blue', 'teal']; const color = colors[index % colors.length]; return `color: var(--ctp-${theme}-${color});`; } }">
+                            <li class="list-row">
+                                <div class="text-4xl font-thin tabular-nums" :style="getStepColor(0)">1</div>
+                                <div class="list-col-grow">
+                                    <div class="font-bold text-lg">Gather</div>
+                                    <p class="text-sm">One person starts a session and shares the code. Everyone joins using the same code. You need at least 2 people to begin.</p>
+                                </div>
+                            </li>
+                            <li class="list-row">
+                                <div class="text-4xl font-thin tabular-nums" :style="getStepColor(1)">2</div>
+                                <div class="list-col-grow">
+                                    <div class="font-bold text-lg">Write</div>
+                                    <p class="text-sm">Everyone writes a note of appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful.</p>
+                                </div>
+                            </li>
+                            <li class="list-row">
+                                <div class="text-4xl font-thin tabular-nums" :style="getStepColor(2)">3</div>
+                                <div class="list-col-grow">
+                                    <div class="font-bold text-lg">Share</div>
+                                    <p class="text-sm">Take turns picking notes and reading them aloud to the group. Since notes don't have author names attached, Uplift emphasizes the group supporting one another instead of individual relationships.</p>
+                                </div>
+                            </li>
+                            <li class="list-row">
+                                <div class="text-4xl font-thin tabular-nums" :style="getStepColor(3)">4</div>
+                                <div class="list-col-grow">
+                                    <div class="font-bold text-lg">Reflect</div>
+                                    <p class="text-sm">At the end, you'll see all the notes written for you. Take a moment to appreciate the recognition from your team. You can copy or print the affirmations to read again later.</p>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="alert alert-success alert-soft mt-6">
+                            <span class="text-2xl">💡</span>
+                            <span><strong>Tip:</strong> Uplift works best when everyone is present and engaged. Find a quiet moment when your group can focus together.</span>
                         </div>
                     </div>
                 </div>
@@ -439,58 +473,6 @@
                         <button class="btn btn-ghost min-h-[48px]">Cancel</button>
                     </form>
                     <button @click="removeParticipant()" class="btn btn-error min-h-[48px]">Remove</button>
-                </div>
-            </div>
-            <form method="dialog" class="modal-backdrop">
-                <button>close</button>
-            </form>
-        </dialog>
-
-        <!-- How it Works Modal -->
-        <dialog id="how_it_works_modal" class="modal">
-            <div class="modal-box max-w-2xl">
-                <form method="dialog">
-                    <button class="btn btn-circle btn-ghost absolute right-2 top-2 min-h-[44px] min-w-[44px]">✕</button>
-                </form>
-                <h3 class="font-bold text-2xl mb-4">How Uplift Works</h3>
-
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="badge badge-primary badge-lg">1</div>
-                            <h4 class="font-bold text-lg">Gather</h4>
-                        </div>
-                        <p class="text-sm ml-10">One person starts a session and shares the code. Everyone joins using the same code. You need at least 2 people to begin.</p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="badge badge-primary badge-lg">2</div>
-                            <h4 class="font-bold text-lg">Write</h4>
-                        </div>
-                        <p class="text-sm ml-10">Everyone writes a note of appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful.</p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="badge badge-primary badge-lg">3</div>
-                            <h4 class="font-bold text-lg">Share</h4>
-                        </div>
-                        <p class="text-sm ml-10">Take turns picking notes and reading them aloud to the group. Since notes don't have author names attached, Uplift emphasizes the group supporting one another instead of individual relationships.</p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="badge badge-primary badge-lg">4</div>
-                            <h4 class="font-bold text-lg">Reflect</h4>
-                        </div>
-                        <p class="text-sm ml-10">At the end, you'll see all the notes written for you. Take a moment to appreciate the recognition from your team. You can copy or print the affirmations to read again later.</p>
-                    </div>
-                </div>
-
-                <div class="alert alert-success alert-soft mt-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span><strong>Tip:</strong> Uplift works best when everyone is present and engaged. Find a quiet moment when your group can focus together.</span>
                 </div>
             </div>
             <form method="dialog" class="modal-backdrop">
