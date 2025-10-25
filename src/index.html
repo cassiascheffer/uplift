@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uplift</title>
+    <title>Uplift - Gratitude Circle Team Building Activity</title>
+    <meta name="description" content="A team building activity for gratitude circles. Write appreciation notes to colleagues, share them aloud, and celebrate each other's contributions.">
 
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://uplift.fly.dev/">
-    <meta property="og:title" content="Uplift">
-    <meta property="og:description" content="Uplift your peers and celebrate their work. Write heartfelt notes to each other, then take turns picking and reading them aloud to your team.">
+    <meta property="og:title" content="Uplift - Gratitude Circle Team Building Activity">
+    <meta property="og:description" content="A team building activity for gratitude circles. Write appreciation notes to colleagues, share them aloud, and celebrate each other's contributions.">
     <meta property="og:image" content="/kind-and-curious-ZDUXvlyU_iI-unsplash.jpg">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://uplift.fly.dev/">
-    <meta name="twitter:title" content="Uplift">
-    <meta name="twitter:description" content="Uplift your peers and celebrate their work. Write heartfelt notes to each other, then take turns picking and reading them aloud to your team.">
+    <meta name="twitter:title" content="Uplift - Gratitude Circle Team Building Activity">
+    <meta name="twitter:description" content="A team building activity for gratitude circles. Write appreciation notes to colleagues, share them aloud, and celebrate each other's contributions.">
     <meta name="twitter:image" content="/kind-and-curious-ZDUXvlyU_iI-unsplash.jpg">
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎈</text></svg>">
@@ -24,6 +25,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
     <script type="module" src="/main.js"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Uplift",
+      "description": "A team building activity for gratitude circles where colleagues write and share appreciation notes",
+      "applicationCategory": "BusinessApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CAD"
+      }
+    }
+    </script>
 </head>
 <body class="min-h-screen bg-base-200">
     <!-- Skip to main content link for keyboard users -->
@@ -36,16 +51,21 @@
             <!-- Header with title and leave button -->
             <div class="flex items-center justify-between mb-6">
                 <div class="w-[100px]" x-show="sessionCode && currentView !== 'home'"></div>
-                <h1
-                    class="text-4xl sm:text-5xl md:text-6xl font-bold text-primary flex-1 text-center cursor-pointer hover:opacity-80 transition-opacity"
-                    @click="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
-                    role="button"
-                    :aria-label="sessionCode && currentView !== 'home' ? 'Leave session and return home' : 'Uplift home'"
-                    tabindex="0"
-                    @keydown.enter="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
-                    @keydown.space.prevent="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null">
-                    🎈Uplift
-                </h1>
+                <div class="flex-1 text-center">
+                    <h1
+                        class="text-4xl sm:text-5xl md:text-6xl font-bold text-primary cursor-pointer hover:opacity-80 transition-opacity"
+                        @click="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
+                        role="button"
+                        :aria-label="sessionCode && currentView !== 'home' ? 'Leave session and return home' : 'Uplift home'"
+                        tabindex="0"
+                        @keydown.enter="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null"
+                        @keydown.space.prevent="sessionCode && currentView !== 'home' ? document.getElementById('leave_modal').showModal() : null">
+                        🎈Uplift
+                    </h1>
+                    <p x-show="currentView === 'home'" x-transition class="text-sm sm:text-base text-base-content/60 mt-1">
+                        A gratitude circle for your team
+                    </p>
+                </div>
                 <button
                     x-show="sessionCode && currentView !== 'home'"
                     @click="document.getElementById('leave_modal').showModal()"
@@ -197,7 +217,7 @@
                                 <div class="text-4xl font-thin tabular-nums" :style="getStepColor(1)">2</div>
                                 <div class="list-col-grow">
                                     <div class="font-bold text-lg">Write</div>
-                                    <p class="text-sm">Everyone writes a note of appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful.</p>
+                                    <p class="text-sm">Everyone writes a note of gratitude and appreciation for each person in the session. Be specific and heartfelt—the more personal, the more meaningful.</p>
                                 </div>
                             </li>
                             <li class="list-row">
