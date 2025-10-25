@@ -110,6 +110,7 @@ textarea:focus-visible,
 
   /* Hide UI elements */
   header,
+  footer,
   button,
   .btn,
   .toast,
