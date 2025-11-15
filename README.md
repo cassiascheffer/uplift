@@ -1,6 +1,6 @@
 # Uplift
 
-**[Try it now at uplift.fly.dev](https://uplift.fly.dev)**
+**[Try it now at upliftapp.online](https://upliftapp.online/)**
 
 A real-time web application for facilitating structured appreciation sessions where team members anonymously write and share positive notes with each other.
 
